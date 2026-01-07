@@ -1,0 +1,13 @@
+# GitHub Pages Jekyll config
+plugins:
+  - jekyll-redirect-from
+
+include:
+  - "*.json"
+  - "*.js"
+  - "*.css"
+  - "*.html"
+
+exclude:
+  - README.md
+  - .gitignore
