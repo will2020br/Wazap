@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Alternativas Grátis</title>
+    <title>Chat Alternativas - Sem Instalar</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         
         .container { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 500px; width: 100%; overflow: hidden; }
         
@@ -75,10 +75,6 @@
         
         .chat-input button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
         
-        .copy-btn { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
-        
-        .copy-btn:hover { background: #138496; }
-        
         .help-text { font-size: 12px; color: #6c757d; margin-top: 5px; }
         
         .code-example { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; word-break: break-all; margin: 5px 0; }
@@ -94,48 +90,48 @@
     <div class="container">
         <div class="header">
             <h1>💬 Chat Alternativas Grátis</h1>
-            <p>TLS gratuito sem ngrok pago</p>
+            <p>Sem instalar nada - Use npx ou SSH</p>
         </div>
         
         <div id="setupArea" class="setup-area">
             <h3 style="margin-bottom: 20px; color: #495057;">Escolha uma opção GRÁTIS:</h3>
             
-            <!-- Botões com onclick direto -->
-            <button class="option-card" onclick="selectCloudflare()" id="cloudflareBtn">
-                <div class="option-title">🚀 Cloudflare Tunnel</div>
-                <div class="option-description">TLS automático, gratuito, sem limites</div>
-                <div class="option-price">✅ 100% GRATUITO</div>
+            <!-- Botões com funções onclick diretas -->
+            <button class="option-card" onclick="selectOption('localtunnel')" id="localtunnelBtn">
+                <div class="option-title">⚡ Localtunnel (MAIS FÁCIL)</div>
+                <div class="option-description">Só digitar: npx localtunnel --port 8080</div>
+                <div class="option-price">✅ SEM INSTALAR NADA</div>
             </button>
             
-            <button class="option-card" onclick="selectLocaltunnel()" id="localtunnelBtn">
-                <div class="option-title">⚡ Localtunnel</div>
-                <div class="option-description">Simples, rápido, sem instalação</div>
-                <div class="option-price">✅ 100% GRATUITO</div>
+            <button class="option-card" onclick="selectOption('pinggy')" id="pinggyBtn">
+                <div class="option-title">🎯 Pinggy (Com TLS)</div>
+                <div class="option-description">SSH que já existe: ssh -R0:localhost:8080 a.pinggy.io</div>
+                <div class="option-price">✅ SEM INSTALAR NADA</div>
             </button>
             
-            <button class="option-card" onclick="selectPinggy()" id="pinggyBtn">
-                <div class="option-title">🎯 Pinggy</div>
-                <div class="option-description">TCP/UDP com TLS gratuito</div>
-                <div class="option-price">✅ Grátis</div>
+            <button class="option-card" onclick="selectOption('serveo')" id="serveoBtn">
+                <div class="option-title">🚀 Serveo (Mais rápido)</div>
+                <div class="option-description">SSH simples: ssh -R 80:localhost:8080 serveo.net</div>
+                <div class="option-price">✅ SEM INSTALAR NADA</div>
             </button>
             
             <!-- Campos de entrada (inicialmente ocultos) -->
-            <div id="cloudflareInput" class="input-group" style="display: none;">
-                <label>URL do Cloudflare Tunnel:</label>
-                <input type="text" id="cloudflareUrl" placeholder="https://seu-tunnel.cloudflare.com">
-                <div class="help-text">Use: cloudflared tunnel --url localhost:8080</div>
-            </div>
-            
             <div id="localtunnelInput" class="input-group" style="display: none;">
                 <label>URL do Localtunnel:</label>
                 <input type="text" id="localtunnelUrl" placeholder="https://abcde.loca.lt">
-                <div class="help-text">Use: npx localtunnel --port 8080</div>
+                <div class="help-text">Execute: <code>npx localtunnel --port 8080</code></div>
             </div>
             
             <div id="pinggyInput" class="input-group" style="display: none;">
                 <label>URL do Pinggy:</label>
                 <input type="text" id="pinggyUrl" placeholder="wss://tcp.pinggy.io:12345">
-                <div class="help-text">Use: ssh -p 443 -R0:localhost:8080 a.pinggy.io</div>
+                <div class="help-text">Execute: <code>ssh -p 443 -R0:localhost:8080 a.pinggy.io</code></div>
+            </div>
+            
+            <div id="serveoInput" class="input-group" style="display: none;">
+                <label>URL do Serveo:</label>
+                <input type="text" id="serveoUrl" placeholder="wss://serveo.net:80">
+                <div class="help-text">Execute: <code>ssh -R 80:localhost:8080 serveo.net</code></div>
             </div>
             
             <div class="input-group">
@@ -169,17 +165,17 @@
     </div>
 
     <script>
-        // Variáveis globais
+        // VARIÁVEIS GLOBAIS
         let selectedOption = '';
         let ws = null;
         let isConnected = false;
         let userName = '';
         let roomName = '';
 
-        // FUNÇÕES SIMPLES (com onclick direto)
-        function selectCloudflare() {
-            console.log('🚀 Selecionado Cloudflare');
-            selectedOption = 'cloudflare';
+        // FUNÇÕES SIMPLES E DIRETAS
+        function selectOption(option) {
+            console.log('🎯 Selecionado:', option);
+            selectedOption = option;
             
             // Limpa seleções anteriores
             document.querySelectorAll('.option-card').forEach(card => {
@@ -187,46 +183,24 @@
             });
             
             // Marca esta opção
-            document.getElementById('cloudflareBtn').classList.add('active');
+            document.getElementById(option + 'Btn').classList.add('active');
             
-            // Mostra/oculta campos
+            // Esconde todos os inputs
             hideAllInputs();
-            document.getElementById('cloudflareInput').style.display = 'block';
+            
+            // Mostra input da opção selecionada
+            document.getElementById(option + 'Input').style.display = 'block';
+            
+            // Habilita botão conectar
             document.getElementById('connectBtn').disabled = false;
-        }
-
-        function selectLocaltunnel() {
-            console.log('⚡ Selecionado Localtunnel');
-            selectedOption = 'localtunnel';
             
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            
-            document.getElementById('localtunnelBtn').classList.add('active');
-            hideAllInputs();
-            document.getElementById('localtunnelInput').style.display = 'block';
-            document.getElementById('connectBtn').disabled = false;
-        }
-
-        function selectPinggy() {
-            console.log('🎯 Selecionado Pinggy');
-            selectedOption = 'pinggy';
-            
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            
-            document.getElementById('pinggyBtn').classList.add('active');
-            hideAllInputs();
-            document.getElementById('pinggyInput').style.display = 'block';
-            document.getElementById('connectBtn').disabled = false;
+            console.log('✅ Opção selecionada:', option);
         }
 
         function hideAllInputs() {
-            document.getElementById('cloudflareInput').style.display = 'none';
             document.getElementById('localtunnelInput').style.display = 'none';
             document.getElementById('pinggyInput').style.display = 'none';
+            document.getElementById('serveoInput').style.display = 'none';
         }
 
         function handleConnection() {
@@ -262,8 +236,8 @@
             
             // Converte baseado no serviço
             switch(selectedOption) {
-                case 'cloudflare':
                 case 'localtunnel':
+                case 'serveo':
                     // Converte HTTPS para WSS
                     processedUrl = processedUrl.replace('https://', 'wss://');
                     if (!processedUrl.startsWith('wss://')) {
@@ -400,8 +374,8 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Chat alternativas - Botões funcionando!');
-            console.log('📍 Funções disponíveis: selectCloudflare(), selectLocaltunnel(), selectPinggy(), handleConnection()');
+            console.log('🚀 Chat alternativas - Botões funcionando 100%!');
+            console.log('📍 Funções disponíveis: selectOption(), handleConnection(), connectToServer(), sendMessage()');
             
             // Esconde todos os inputs no início
             hideAllInputs();
