@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat ngrok - HTTPS/WSS</title>
+    <title>Chat Cloudflare Tunnel - Gratuito</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -17,19 +17,27 @@
         
         .header p { opacity: 0.9; font-size: 14px; }
         
-        .connection-area { padding: 25px; background: #f8f9fa; }
+        .setup-area { padding: 25px; background: #f8f9fa; }
         
-        .input-group { margin-bottom: 15px; }
+        .option-card { background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; margin: 15px 0; cursor: pointer; transition: all 0.3s; }
+        
+        .option-card:hover { border-color: #25D366; transform: translateY(-2px); }
+        
+        .option-card.active { border-color: #25D366; background: #f0f9f0; }
+        
+        .option-title { font-weight: 600; color: #495057; margin-bottom: 8px; }
+        
+        .option-description { font-size: 13px; color: #6c757d; }
+        
+        .option-price { font-size: 12px; color: #28a745; font-weight: 600; margin-top: 5px; }
+        
+        .input-group { margin-top: 15px; display: none; }
         
         .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #495057; font-size: 14px; }
         
         .input-group input { width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
         
         .input-group input:focus { outline: none; border-color: #25D366; }
-        
-        .protocol-warning { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 13px; color: #856404; }
-        
-        .protocol-warning strong { color: #d63031; }
         
         .btn-primary { background: #25D366; color: white; border: none; padding: 12px 24px; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; font-size: 16px; }
         
@@ -65,9 +73,7 @@
         
         .chat-input button:hover { background: #128C7E; transform: scale(1.05); }
         
-        .chat-input button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
-        
-        .copy-btn { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
+        .copy-btn { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 10px; }
         
         .copy-btn:hover { background: #138496; }
         
@@ -77,26 +83,64 @@
         
         @media (max-width: 576px) {
             .container { margin: 10px; border-radius: 10px; }
-            .header { padding: 20px; }
-            .connection-area, .chat-messages { padding: 15px; }
+            .header, .setup-area { padding: 20px; }
+            .chat-messages { padding: 15px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>💬 Chat ngrok</h1>
-            <p>Conexão segura com detecção automática de protocolo</p>
+            <h1>💬 Chat Cloudflare Tunnel</h1>
+            <p>100% gratuito com TLS automático</p>
         </div>
         
-        <div id="connectionArea" class="connection-area">
-            <div class="input-group">
-                <label>URL do ngrok:</label>
+        <div id="setupArea" class="setup-area">
+            <h3 style="margin-bottom: 20px; color: #495057;">Escolha sua solução:</h3>
+            
+            <div class="option-card" onclick="selectOption('cloudflare')" id="cloudflareCard">
+                <div class="option-title">🚀 Cloudflare Tunnel (RECOMENDADO)</div>
+                <div class="option-description">TLS automático, gratuito, sem limites</div>
+                <div class="option-price">✅ 100% GRATUITO</div>
+            </div>
+            
+            <div class="option-card" onclick="selectOption('localtunnel')" id="localtunnelCard">
+                <div class="option-title">⚡ Localtunnel</div>
+                <div class="option-description">Simples, rápido, sem configuração</div>
+                <div class="option-price">✅ 100% GRATUITO</div>
+            </div>
+            
+            <div class="option-card" onclick="selectOption('pinggy')" id="pinggyCard">
+                <div class="option-title">🎯 Pinggy</div>
+                <div class="option-description">Barato, com TLS gratuito</div>
+                <div class="option-price">✅ Grátis / $3/mês</div>
+            </div>
+            
+            <div id="cloudflareSetup" class="input-group" style="display: none;">
+                <label>URL do Cloudflare Tunnel:</label>
                 <div style="display: flex; align-items: center;">
-                    <input type="text" id="ngrokUrl" placeholder="Cole aqui: tcp://0.tcp.ngrok.io:12345">
+                    <input type="text" id="cloudflareUrl" placeholder="https://seu-tunnel.cloudflare.com">
                     <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
                 </div>
-                <div class="help-text">Copie a URL do terminal do ngrok</div>
+                <div class="help-text">Use <code>cloudflared tunnel --url localhost:8080</code> para criar</div>
+            </div>
+            
+            <div id="localtunnelSetup" class="input-group" style="display: none;">
+                <label>URL do Localtunnel:</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="text" id="localtunnelUrl" placeholder="https://abcde.loca.lt">
+                    <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
+                </div>
+                <div class="help-text">Use <code>npx localtunnel --port 8080</code> para criar</div>
+            </div>
+            
+            <div id="pinggySetup" class="input-group" style="display: none;">
+                <label>URL do Pinggy:</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="text" id="pinggyUrl" placeholder="https://tcp.t pinggy.io:12345">
+                    <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
+                </div>
+                <div class="help-text">Use <code>ssh -p 443 -R0:localhost:8080 a.pinggy.io</code> para criar</div>
             </div>
             
             <div class="input-group">
@@ -109,12 +153,8 @@
                 <input type="text" id="roomName" placeholder="nome-da-sala" value="sala1">
             </div>
             
-            <div id="protocolWarning" class="protocol-warning" style="display: none;">
-                <strong>⚠️ Detectado HTTPS:</strong> O sistema usará <strong>WSS</strong> automaticamente
-            </div>
-            
-            <button id="connectBtn" class="btn-primary" onclick="handleConnection()">
-                <span id="connectBtnText">Conectar</span>
+            <button id="connectBtn" class="btn-primary" onclick="handleConnection()" disabled>
+                Conectar
             </button>
             
             <div id="status" class="status" style="display: none;"></div>
@@ -134,12 +174,13 @@
     </div>
 
     <script>
-        class NgrokChat {
+        class CloudflareChat {
             constructor() {
                 this.ws = null;
                 this.isConnected = false;
                 this.userName = '';
                 this.roomName = '';
+                this.selectedOption = '';
                 this.reconnectAttempts = 0;
                 this.maxReconnectAttempts = 5;
                 
@@ -147,93 +188,158 @@
             }
 
             init() {
-                this.detectProtocol();
                 this.loadSavedData();
                 this.setupEventListeners();
+                this.detectInitialOption();
             }
 
-            detectProtocol() {
-                const isHttps = window.location.protocol === 'https:';
-                if (isHttps) {
-                    document.getElementById('protocolWarning').style.display = 'block';
-                    console.log('🔒 HTTPS detectado - usando WSS');
-                } else {
-                    console.log('🔓 HTTP detectado - usando WS');
+            detectInitialOption() {
+                // Detecta se já tem alguma config salva
+                const savedOption = localStorage.getItem('selectedOption');
+                if (savedOption) {
+                    this.selectOption(savedOption);
                 }
             }
 
             loadSavedData() {
-                const savedUrl = localStorage.getItem('ngrokUrl');
                 const savedName = localStorage.getItem('userName');
                 const savedRoom = localStorage.getItem('roomName');
                 
-                if (savedUrl) document.getElementById('ngrokUrl').value = savedUrl;
                 if (savedName) document.getElementById('userName').value = savedName;
                 if (savedRoom) document.getElementById('roomName').value = savedRoom;
             }
 
             setupEventListeners() {
-                const connectBtn = document.getElementById('connectBtn');
                 const messageInput = document.getElementById('messageInput');
-                
-                connectBtn.addEventListener('click', () => this.handleConnection());
                 messageInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') this.sendMessage();
                 });
                 
-                // Auto-deteção de protocolo ao digitar
-                document.getElementById('ngrokUrl').addEventListener('input', (e) => {
-                    this.suggestProtocol(e.target.value);
+                // Auto-deteção de URL
+                ['cloudflareUrl', 'localtunnelUrl', 'pinggyUrl'].forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('input', (e) => {
+                            this.suggestUrlCorrection(e.target.id, e.target.value);
+                        });
+                    }
                 });
             }
 
-            suggestProtocol(url) {
-                if (!url) return;
+            suggestUrlCorrection(fieldId, value) {
+                if (!value) return;
                 
-                const isHttps = window.location.protocol === 'https:';
-                const hasProtocol = url.startsWith('ws://') || url.startsWith('wss://') || url.startsWith('tcp://');
+                let corrected = value;
                 
-                if (!hasProtocol && isHttps) {
-                    // Sugere WSS para HTTPS
-                    document.getElementById('ngrokUrl').value = 'wss://' + url;
-                } else if (!hasProtocol) {
-                    // Sugere WS para HTTP
-                    document.getElementById('ngrokUrl').value = 'ws://' + url;
-                } else if (url.startsWith('tcp://')) {
-                    // Converte tcp:// automaticamente
-                    document.getElementById('ngrokUrl').value = url.replace('tcp://', isHttps ? 'wss://' : 'ws://');
+                // Correções específicas por serviço
+                switch(fieldId) {
+                    case 'cloudflareUrl':
+                        if (!value.startsWith('http')) {
+                            corrected = 'https://' + value;
+                        }
+                        break;
+                    case 'localtunnelUrl':
+                        if (!value.startsWith('http')) {
+                            corrected = 'https://' + value.replace('.local', '.loca.lt');
+                        }
+                        break;
+                    case 'pinggyUrl':
+                        if (value.includes('tcp.t pinggy.io')) {
+                            corrected = value.replace('tcp.t pinggy.io', 'tcp.pinggy.io');
+                        }
+                        break;
                 }
+                
+                if (corrected !== value) {
+                    document.getElementById(fieldId).value = corrected;
+                }
+            }
+
+            selectOption(option) {
+                this.selectedOption = option;
+                
+                // Remove seleção anterior
+                document.querySelectorAll('.option-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                
+                // Marca seleção atual
+                document.getElementById(option + 'Card').classList.add('active');
+                
+                // Mostra campo apropriado
+                ['cloudflareSetup', 'localtunnelSetup', 'pinggySetup'].forEach(id => {
+                    document.getElementById(id).style.display = 'none';
+                });
+                
+                document.getElementById(option + 'Setup').style.display = 'block';
+                document.getElementById('connectBtn').disabled = false;
+                
+                localStorage.setItem('selectedOption', option);
             }
 
             handleConnection() {
-                const ngrokUrl = document.getElementById('ngrokUrl').value.trim();
-                this.userName = document.getElementById('userName').value.trim() || 'Usuário';
-                this.roomName = document.getElementById('roomName').value.trim() || 'sala1';
-                
-                if (!ngrokUrl) {
-                    this.updateStatus('Por favor, insira a URL do ngrok', 'disconnected');
+                if (!this.selectedOption) {
+                    this.updateStatus('Por favor, selecione uma opção', 'disconnected');
                     return;
                 }
                 
-                // Salva para próxima vez
-                localStorage.setItem('ngrokUrl', ngrokUrl);
+                const urlField = this.selectedOption + 'Url';
+                const url = document.getElementById(urlField).value.trim();
+                
+                if (!url) {
+                    this.updateStatus('Por favor, insira a URL', 'disconnected');
+                    return;
+                }
+                
+                this.userName = document.getElementById('userName').value.trim() || 'Usuário';
+                this.roomName = document.getElementById('roomName').value.trim() || 'sala1';
+                
+                // Salva dados
                 localStorage.setItem('userName', this.userName);
                 localStorage.setItem('roomName', this.roomName);
                 
-                // Processa a URL
-                const wsUrl = this.processUrl(ngrokUrl);
-                this.connect(wsUrl);
+                // Processa URL baseado no serviço
+                const processedUrl = this.processServiceUrl(url);
+                this.connect(processedUrl);
             }
 
-            processUrl(url) {
+            processServiceUrl(url) {
                 let processedUrl = url.trim();
                 
-                // Remove espaços e converte tcp://
-                processedUrl = processedUrl.replace('tcp://', window.location.protocol === 'https:' ? 'wss://' : 'ws://');
-                
-                // Adiciona protocolo se não tiver
-                if (!processedUrl.startsWith('ws://') && !processedUrl.startsWith('wss://')) {
-                    processedUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + processedUrl;
+                switch(this.selectedOption) {
+                    case 'cloudflare':
+                        // Cloudflare já vem com HTTPS
+                        if (!processedUrl.startsWith('http')) {
+                            processedUrl = 'https://' + processedUrl;
+                        }
+                        // Converte para WebSocket
+                        processedUrl = processedUrl.replace('https://', 'wss://');
+                        break;
+                        
+                    case 'localtunnel':
+                        // Localtunnel já vem com HTTPS
+                        if (!processedUrl.startsWith('http')) {
+                            processedUrl = 'https://' + processedUrl;
+                        }
+                        // Converte para WebSocket
+                        processedUrl = processedUrl.replace('https://', 'wss://');
+                        break;
+                        
+                    case 'pinggy':
+                        // Pinggy TCP precisa ser convertido
+                        if (processedUrl.includes('tcp.pinggy.io')) {
+                            // Extrai porta da URL
+                            const portMatch = processedUrl.match(/:(\d+)/);
+                            const port = portMatch ? portMatch[1] : '443';
+                            processedUrl = `wss://tcp.pinggy.io:${port}`;
+                        } else {
+                            // Se já vem com formato certo
+                            processedUrl = processedUrl.replace('tcp://', 'wss://');
+                            if (!processedUrl.startsWith('ws')) {
+                                processedUrl = 'wss://' + processedUrl;
+                            }
+                        }
+                        break;
                 }
                 
                 console.log('🔗 URL processada:', processedUrl);
@@ -254,8 +360,6 @@
                         this.reconnectAttempts = 0;
                         this.updateStatus('Conectado', 'connected');
                         this.showChat();
-                        
-                        // Entrar na sala
                         this.joinRoom();
                     };
                     
@@ -292,14 +396,6 @@
                 }
             }
 
-            handleMessage(message) {
-                if (message.type === 'message') {
-                    const sender = message.userName === this.userName ? 'Você' : (message.userName || 'Anônimo');
-                    const messageType = message.userName === this.userName ? 'sent' : 'received';
-                    this.addMessage(`${sender}: ${message.text}`, messageType);
-                }
-            }
-
             sendMessage() {
                 if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
                     this.updateStatus('Não conectado', 'disconnected');
@@ -323,6 +419,14 @@
                 input.value = '';
             }
 
+            handleMessage(message) {
+                if (message.type === 'message') {
+                    const sender = message.userName === this.userName ? 'Você' : (message.userName || 'Anônimo');
+                    const messageType = message.userName === this.userName ? 'sent' : 'received';
+                    this.addMessage(`${sender}: ${message.text}`, messageType);
+                }
+            }
+
             addMessage(text, type) {
                 const messagesList = document.getElementById('messagesList');
                 const messageDiv = document.createElement('div');
@@ -343,7 +447,7 @@
             }
 
             showChat() {
-                document.getElementById('connectionArea').style.display = 'none';
+                document.getElementById('setupArea').style.display = 'none';
                 document.getElementById('chatArea').style.display = 'block';
                 document.getElementById('messageInput').disabled = false;
                 document.getElementById('sendBtn').disabled = false;
@@ -353,9 +457,7 @@
                 this.isConnected = false;
                 this.updateStatus('Desconectado', 'disconnected');
                 document.getElementById('connectBtn').disabled = false;
-                
-                // Mantém a área de chat visível para mensagens de sistema
-                this.addMessage('🔌 Conexão perdida. Verifique ngrok e tente novamente.', 'sistema');
+                this.addMessage('🔌 Conexão perdida. Verifique o serviço e tente novamente.', 'sistema');
             }
 
             handleConnectionError(error) {
@@ -366,7 +468,7 @@
                 let errorMsg = 'Erro ao conectar';
                 if (error.message) errorMsg += ': ' + error.message;
                 
-                alert(`❌ ${errorMsg}\n\nVerifique:\n1. ngrok está rodando (ngrok tcp 8080)\n2. A URL está correta\n3. O servidor está ativo\n4. Tente usar wss:// para HTTPS`);
+                alert(`❌ ${errorMsg}\n\nVerifique:\n1. O serviço está rodando?\n2. A URL está correta?\n3. Tente outro serviço da lista`);
             }
 
             updateStatus(text, type) {
@@ -383,19 +485,22 @@
             }
 
             pasteFromClipboard() {
-                navigator.clipboard.readText().then(text => {
-                    document.getElementById('ngrokUrl').value = text;
-                    this.suggestProtocol(text);
-                }).catch(() => {
-                    alert('❌ Não foi possível acessar a área de transferência');
-                });
+                const activeInput = document.querySelector('.input-group[style*="block"] input');
+                if (activeInput) {
+                    navigator.clipboard.readText().then(text => {
+                        activeInput.value = text;
+                        this.suggestUrlCorrection(activeInput.id, text);
+                    }).catch(() => {
+                        alert('❌ Não foi possível acessar a área de transferência');
+                    });
+                }
             }
         }
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Chat ngrok com detecção automática de protocolo');
-            new NgrokChat();
+            console.log('🚀 Cloudflare Chat com múltiplas alternativas gratuitas');
+            new CloudflareChat();
         });
     </script>
 </body>
