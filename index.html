@@ -153,45 +153,27 @@
         .btn-icon { background: transparent; color: white; width: 40px; height: 40px; }
         .btn-attach { background: transparent; color: #54656f; }
         
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal.active { display: flex; }
-        
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .btn-secondary {
+        .url-share {
             background: var(--background);
-            color: var(--text-primary);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 25px;
-            padding: 12px 25px;
-            font-weight: 600;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
             cursor: pointer;
         }
         
@@ -212,7 +194,7 @@
                 </svg>
             </div>
             <h1>WhatsApp Clone</h1>
-            <p>Crie chats privados que funcionam no seu navegador</p>
+            <p>Compartilhe a URL para conversar com qualquer pessoa</p>
             <button id="createChatBtn" class="btn-primary">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="white"/>
@@ -231,17 +213,12 @@
                 </svg>
             </button>
             <div style="flex: 1;">
-                <h3>Chat Privado</h3>
-                <small>online</small>
+                <h3>Chat Compartilhado</h3>
+                <small>Compartilhe este link</small>
             </div>
-            <button id="exportBtn" class="btn-icon" title="Exportar">
+            <button id="shareBtn" class="btn-icon" title="Compartilhar">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="white"/>
-                </svg>
-            </button>
-            <button id="deleteBtn" class="btn-icon" title="Apagar">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
+                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="white"/>
                 </svg>
             </button>
         </header>
@@ -266,33 +243,23 @@
         </footer>
     </div>
 
-    <!-- Modal de Confirmação -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <h3>Confirmar Ação</h3>
-            <p id="modalMessage"></p>
-            <div class="modal-actions">
-                <button id="modalCancel" class="btn-secondary">Cancelar</button>
-                <button id="modalConfirm" class="btn-primary">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         class WhatsAppClone {
             constructor() {
                 this.currentChatId = null;
                 this.currentFile = null;
+                this.messages = [];
                 this.init();
             }
 
             init() {
-                console.log('🚀 Iniciando WhatsApp Clone');
+                console.log('🚀 WhatsApp Clone - URL Compartilhável');
                 
                 // Detectar estado inicial pela URL
                 const hash = window.location.hash;
                 if (hash) {
                     this.currentChatId = hash.substring(1);
+                    this.loadFromURL();
                     this.showChatScreen();
                 } else {
                     this.showWelcomeScreen();
@@ -314,8 +281,7 @@
                 const attachBtn = document.getElementById('attachBtn');
                 const fileInput = document.getElementById('fileInput');
                 const backBtn = document.getElementById('backBtn');
-                const exportBtn = document.getElementById('exportBtn');
-                const deleteBtn = document.getElementById('deleteBtn');
+                const shareBtn = document.getElementById('shareBtn');
 
                 if (sendBtn) sendBtn.addEventListener('click', () => this.sendMessage());
                 if (messageInput) {
@@ -326,16 +292,12 @@
                 if (attachBtn) attachBtn.addEventListener('click', () => fileInput.click());
                 if (fileInput) fileInput.addEventListener('change', (e) => this.handleFile(e));
                 if (backBtn) backBtn.addEventListener('click', () => this.goBack());
-                if (exportBtn) exportBtn.addEventListener('click', () => this.exportChat());
-                if (deleteBtn) deleteBtn.addEventListener('click', () => this.deleteChat());
+                if (shareBtn) shareBtn.addEventListener('click', () => this.shareChat());
 
-                // Modal
-                const modalCancel = document.getElementById('modalCancel');
-                if (modalCancel) {
-                    modalCancel.addEventListener('click', () => {
-                        document.getElementById('confirmModal').classList.remove('active');
-                    });
-                }
+                // Detectar mudanças na URL
+                window.addEventListener('hashchange', () => {
+                    location.reload(); // Recarrega para sincronizar
+                });
             }
 
             createNewChat() {
@@ -348,29 +310,48 @@
             }
 
             showWelcomeScreen() {
-                console.log('🏠 Mostrando tela inicial');
+                console.log('🏠 Tela inicial');
                 document.getElementById('welcomeScreen').style.display = 'flex';
                 document.getElementById('chatScreen').style.display = 'none';
             }
 
             showChatScreen() {
-                console.log('💬 Mostrando tela do chat');
+                console.log('💬 Tela do chat');
                 document.getElementById('welcomeScreen').style.display = 'none';
                 document.getElementById('chatScreen').style.display = 'flex';
                 
                 this.loadMessages();
-                
-                // Simular mensagem de boas-vindas
-                if (this.getMessages().length === 0) {
-                    setTimeout(() => {
-                        this.addMessage({
-                            id: Date.now(),
-                            text: 'Olá! Este é seu chat privado. Compartilhe a URL para conversar.',
-                            timestamp: new Date().toISOString(),
-                            type: 'text',
-                            sender: 'other'
-                        });
-                    }, 1000);
+            }
+
+            // 🔑 SISTEMA CHAVE: Mensagens na URL
+            saveToURL() {
+                try {
+                    // Compactar mensagens para URL
+                    const data = btoa(JSON.stringify(this.messages));
+                    const newUrl = window.location.pathname + window.location.hash + '?data=' + data;
+                    window.history.replaceState({}, '', newUrl);
+                    console.log('💾 Mensagens salvas na URL');
+                } catch (error) {
+                    console.error('❌ Erro ao salvar na URL:', error);
+                }
+            }
+
+            loadFromURL() {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const data = urlParams.get('data');
+                    
+                    if (data) {
+                        // Descompactar mensagens da URL
+                        this.messages = JSON.parse(atob(data));
+                        console.log('📨 Mensagens carregadas da URL:', this.messages.length);
+                    } else {
+                        console.log('📭 Nenhuma mensagem na URL');
+                        this.messages = [];
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao carregar da URL:', error);
+                    this.messages = [];
                 }
             }
 
@@ -394,45 +375,14 @@
                 this.currentFile = null;
                 input.placeholder = 'Digite uma mensagem...';
                 
-                // Simular resposta
-                setTimeout(() => this.simulateReply(), 1500);
-            }
-
-            simulateReply() {
-                const replies = [
-                    "Entendi! 😊",
-                    "Que legal! Conte mais.",
-                    "Concordo com você!",
-                    "Hmm, interessante...",
-                    "Estou aqui para conversar!"
-                ];
-                
-                const reply = {
-                    id: Date.now(),
-                    text: replies[Math.floor(Math.random() * replies.length)],
-                    timestamp: new Date().toISOString(),
-                    type: 'text',
-                    sender: 'other'
-                };
-                
-                this.addMessage(reply);
+                // Salvar na URL imediatamente
+                this.saveToURL();
             }
 
             addMessage(message) {
-                const messages = this.getMessages();
-                messages.push(message);
-                localStorage.setItem(`chat_${this.currentChatId}_messages`, JSON.stringify(messages));
+                this.messages.push(message);
                 this.renderMessage(message);
                 this.scrollToBottom();
-            }
-
-            getMessages() {
-                try {
-                    const stored = localStorage.getItem(`chat_${this.currentChatId}_messages`);
-                    return stored ? JSON.parse(stored) : [];
-                } catch {
-                    return [];
-                }
             }
 
             renderMessage(message) {
@@ -484,12 +434,11 @@
             }
 
             loadMessages() {
-                const messages = this.getMessages();
                 const messagesList = document.getElementById('messagesList');
                 if (!messagesList) return;
                 
                 messagesList.innerHTML = '';
-                messages.forEach(message => this.renderMessage(message));
+                this.messages.forEach(message => this.renderMessage(message));
                 this.scrollToBottom();
             }
 
@@ -514,34 +463,22 @@
                 reader.readAsDataURL(file);
             }
 
-            exportChat() {
-                const messages = this.getMessages();
-                const chatData = {
-                    chatId: this.currentChatId,
-                    exportDate: new Date().toISOString(),
-                    messages: messages
-                };
+            shareChat() {
+                const shareUrl = window.location.href;
                 
-                const dataStr = JSON.stringify(chatData, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `chat_${this.currentChatId}_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-            }
-
-            deleteChat() {
-                const modal = document.getElementById('confirmModal');
-                document.getElementById('modalMessage').textContent = 'Tem certeza que deseja apagar este chat?';
-                modal.classList.add('active');
-                
-                document.getElementById('modalConfirm').onclick = () => {
-                    localStorage.removeItem(`chat_${this.currentChatId}_messages`);
-                    modal.classList.remove('active');
-                    window.location.hash = '';
-                    this.showWelcomeScreen();
-                };
+                // Copiar para clipboard
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('🔗 Link copiado! Compartilhe com outras pessoas para conversar.');
+                }).catch(() => {
+                    // Fallback para navegadores antigos
+                    const textArea = document.createElement('textarea');
+                    textArea.value = shareUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('🔗 Link copiado! Compartilhe com outras pessoas para conversar.');
+                });
             }
 
             goBack() {
@@ -563,15 +500,10 @@
             }
         }
 
-        // Inicializar quando a página carregar
+        // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 WhatsApp Clone carregado');
+            console.log('🚀 WhatsApp Clone com URL Compartilhável');
             new WhatsAppClone();
-        });
-
-        // Detectar mudanças no hash (quando usuário navega)
-        window.addEventListener('hashchange', () => {
-            location.reload(); // Recarrega para mudar entre telas
         });
     </script>
 </body>
