@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Clone Real</title>
+    <title>WhatsApp Clone Real-Time</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -16,6 +16,7 @@
             --message-received: #ffffff;
             --text-primary: #1b1b1b;
             --text-secondary: #6b6b6b;
+            --danger: #f44336;
         }
 
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--background); }
@@ -85,20 +86,20 @@
             transform: translateY(-2px);
         }
         
-        .btn-secondary {
-            background: var(--background);
-            color: var(--text-primary);
+        .btn-danger {
+            background: var(--danger);
+            color: white;
             border: none;
             border-radius: 25px;
-            padding: 12px 25px;
+            padding: 10px 20px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .btn-secondary:hover {
-            background: var(--border);
+        .btn-danger:hover {
+            background: #d32f2f;
         }
 
         .chat-screen {
@@ -189,7 +190,7 @@
         .btn-icon { background: transparent; color: white; width: 40px; height: 40px; }
         .btn-attach { background: transparent; color: #54656f; }
         
-        .sync-status {
+        .connection-status {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -201,19 +202,45 @@
             z-index: 1000;
         }
         
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 8px;
+        .connection-status.connected {
+            background: var(--primary);
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .connection-status.disconnected {
+            background: var(--danger);
+        }
+        
+        .ngrok-setup {
+            background: var(--background);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .ngrok-setup h3 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        .ngrok-setup ol {
+            margin-left: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .ngrok-setup li {
+            margin-bottom: 5px;
+        }
+        
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
         }
         
         input[type="file"] { display: none; }
@@ -224,39 +251,112 @@
     </style>
 </head>
 <body>
-    <!-- TELA DE CONFIGURAÇÃO -->
-    <div id="setupScreen" class="welcome-screen">
+    <!-- TELA DE CONEXÃO -->
+    <div id="connectionScreen" class="welcome-screen">
         <div class="welcome-card">
             <div class="logo">
                 <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v-2h-4v2zm0-4h4V6h-4v2z" fill="#25D366"/>
                 </svg>
             </div>
-            <h1>WhatsApp Clone Real</h1>
-            <p>Configure o sincronizador de mensagens</p>
+            <h1>WhatsApp Clone Real-Time</h1>
+            <p>Conexão via ngrok WebSocket</p>
+            
+            <div class="ngrok-setup">
+                <h3>📋 Configuração do Servidor</h3>
+                <ol>
+                    <li>Baixe e instale o ngrok: <strong>https://ngrok.com/download</strong></li>
+                    <li>Crie uma conta no ngrok (grátis)</li>
+                    <li>Obtenha seu token authtoken</li>
+                    <li>Execute no terminal:</li>
+                </ol>
+                <div class="code-block">
+                    ngrok authtoken SEU_TOKEN_AQUI<br>
+                    ngrok tcp 8080
+                </div>
+                <li>Copie a URL gerada (ex: <code>tcp://0.tcp.ngrok.io:12345</code>)</li>
+                <li>Execute o servidor WebSocket (código abaixo)</li>
+            </div>
             
             <div class="setup-form">
                 <div class="form-group">
-                    <label>GitHub Token (gratuito):</label>
-                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                    <small>Crie em: GitHub > Settings > Developer settings > Personal access tokens</small>
+                    <label>URL do Servidor WebSocket:</label>
+                    <input type="text" id="wsUrl" placeholder="ws://0.tcp.ngrok.io:12345" value="">
                 </div>
                 <div class="form-group">
-                    <label>Nome do Gist (identificador do chat):</label>
-                    <input type="text" id="gistId" placeholder="meu-chat-privado-123">
-                    <small>Use o mesmo nome para sincronizar entre dispositivos</small>
+                    <label>Seu Nome:</label>
+                    <input type="text" id="userName" placeholder="Seu Nome" value="">
+                </div>
+                <div class="form-group">
+                    <label>Sala (compartilhe este nome):</label>
+                    <input type="text" id="roomName" placeholder="minha-sala-privada" value="">
                 </div>
             </div>
             
-            <button id="startBtn" class="btn-primary">
-                Iniciar Chat
+            <button id="connectBtn" class="btn-primary">
+                Conectar ao Servidor
             </button>
             
-            <div style="margin-top: 20px; font-size: 12px; color: #666;">
-                <p><strong>Como funciona:</strong></p>
-                <p>1. Crie um token no GitHub (é gratuito)</p>
-                <p>2. Compartilhe o nome do gist com outras pessoas</p>
-                <p>3. Todas verão as mesmas mensagens em tempo real!</p>
+            <div style="margin-top: 20px;">
+                <details>
+                    <summary style="cursor: pointer; color: #666;">📄 Código do Servidor WebSocket</summary>
+                    <div class="code-block">
+// 📄 server.js - Salve e execute com: node server.js<br>
+const WebSocket = require('ws');<br>
+const http = require('http');<br>
+<br>
+const server = http.createServer();<br>
+const wss = new WebSocket.Server({ server });<br>
+<br>
+const rooms = new Map();<br>
+<br>
+wss.on('connection', (ws) => {<br>
+&nbsp;&nbsp;let currentRoom = null;<br>
+&nbsp;&nbsp;let userName = null;<br>
+<br>
+&nbsp;&nbsp;ws.on('message', (data) => {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const msg = JSON.parse(data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;switch(msg.type) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case 'join':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currentRoom = msg.room;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userName = msg.userName;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!rooms.has(currentRoom)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.set(currentRoom, new Set());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.get(currentRoom).add(ws);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case 'message':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (currentRoom && rooms.has(currentRoom)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const message = {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...msg,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timestamp: new Date().toISOString(),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userName: userName<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.get(currentRoom).forEach(client => {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (client !== ws && client.readyState === WebSocket.OPEN) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.send(JSON.stringify(message));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;});<br>
+<br>
+&nbsp;&nbsp;ws.on('close', () => {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (currentRoom && rooms.has(currentRoom)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.get(currentRoom).delete(ws);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;});<br>
+});<br>
+<br>
+server.listen(8080, () => {<br>
+&nbsp;&nbsp;console.log('🚀 Servidor WebSocket rodando na porta 8080');<br>
+&nbsp;&nbsp;console.log('📋 Execute: ngrok tcp 8080');<br>
+&nbsp;&nbsp;console.log('🔗 Copie a URL ws://... e cole no campo acima');<br>
+});
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -270,10 +370,10 @@
                 </svg>
             </button>
             <div style="flex: 1;">
-                <h3 id="chatTitle">Chat Sincronizado</h3>
-                <small id="syncStatus">Conectando...</small>
+                <h3 id="chatTitle">Chat Real-Time</h3>
+                <small id="connectionInfo">Conectando...</small>
             </div>
-            <button id="shareBtn" class="btn-icon" title="Compartilhar">
+            <button id="shareBtn" class="btn-icon" title="Compartilhar Sala">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="white"/>
                 </svg>
@@ -303,30 +403,31 @@
     <script>
         class WhatsAppClone {
             constructor() {
-                this.githubToken = localStorage.getItem('githubToken') || '';
-                this.gistId = localStorage.getItem('gistId') || '';
-                this.messages = [];
-                this.syncInterval = null;
-                this.lastSync = 0;
+                this.ws = null;
+                this.wsUrl = localStorage.getItem('wsUrl') || '';
+                this.userName = localStorage.getItem('userName') || '';
+                this.roomName = localStorage.getItem('roomName') || '';
+                this.currentFile = null;
+                this.reconnectInterval = null;
+                this.isConnected = false;
                 
                 this.init();
             }
 
-            async init() {
-                console.log('🚀 WhatsApp Clone com GitHub Gists');
+            init() {
+                console.log('🚀 WhatsApp Clone com ngrok WebSocket');
                 
-                // Verificar se tem configuração salva
-                if (!this.githubToken || !this.gistId) {
-                    this.showSetupScreen();
+                if (this.wsUrl && this.userName && this.roomName) {
+                    this.connect();
                 } else {
-                    await this.startChat();
+                    this.showConnectionScreen();
                 }
                 
                 this.setupEventListeners();
             }
 
             setupEventListeners() {
-                const startBtn = document.getElementById('startBtn');
+                const connectBtn = document.getElementById('connectBtn');
                 const sendBtn = document.getElementById('sendBtn');
                 const messageInput = document.getElementById('messageInput');
                 const attachBtn = document.getElementById('attachBtn');
@@ -334,8 +435,8 @@
                 const backBtn = document.getElementById('backBtn');
                 const shareBtn = document.getElementById('shareBtn');
 
-                if (startBtn) {
-                    startBtn.addEventListener('click', () => this.saveSetup());
+                if (connectBtn) {
+                    connectBtn.addEventListener('click', () => this.saveConnection());
                 }
                 
                 if (sendBtn) sendBtn.addEventListener('click', () => this.sendMessage());
@@ -346,225 +447,179 @@
                 }
                 if (attachBtn) attachBtn.addEventListener('click', () => fileInput.click());
                 if (fileInput) fileInput.addEventListener('change', (e) => this.handleFile(e));
-                if (backBtn) backBtn.addEventListener('click', () => this.goBack());
-                if (shareBtn) shareBtn.addEventListener('click', () => this.shareChat());
+                if (backBtn) backBtn.addEventListener('click', () => this.disconnect());
+                if (shareBtn) shareBtn.addEventListener('click', () => this.shareRoom());
             }
 
-            showSetupScreen() {
-                document.getElementById('setupScreen').style.display = 'flex';
+            showConnectionScreen() {
+                document.getElementById('connectionScreen').style.display = 'flex';
                 document.getElementById('chatScreen').style.display = 'none';
             }
 
-            async saveSetup() {
-                const token = document.getElementById('githubToken').value.trim();
-                const gistId = document.getElementById('gistId').value.trim();
+            showChatScreen() {
+                document.getElementById('connectionScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                document.getElementById('chatTitle').textContent = `Sala: ${this.roomName}`;
+            }
+
+            saveConnection() {
+                const wsUrl = document.getElementById('wsUrl').value.trim();
+                const userName = document.getElementById('userName').value.trim();
+                const roomName = document.getElementById('roomName').value.trim();
                 
-                if (!token || !gistId) {
+                if (!wsUrl || !userName || !roomName) {
                     alert('❌ Preencha todos os campos');
                     return;
                 }
                 
+                // Converter ws:// para wss:// se necessário
+                let finalUrl = wsUrl;
+                if (!finalUrl.startsWith('ws://') && !finalUrl.startsWith('wss://')) {
+                    finalUrl = 'ws://' + finalUrl;
+                }
+                
                 // Salvar configuração
-                localStorage.setItem('githubToken', token);
-                localStorage.setItem('gistId', gistId);
+                localStorage.setItem('wsUrl', finalUrl);
+                localStorage.setItem('userName', userName);
+                localStorage.setItem('roomName', roomName);
                 
-                this.githubToken = token;
-                this.gistId = gistId;
+                this.wsUrl = finalUrl;
+                this.userName = userName;
+                this.roomName = roomName;
                 
-                await this.startChat();
+                this.connect();
             }
 
-            async startChat() {
-                document.getElementById('setupScreen').style.display = 'none';
-                document.getElementById('chatScreen').style.display = 'flex';
+            connect() {
+                this.showChatScreen();
+                this.updateConnectionInfo('Conectando...');
                 
-                // Criar gist se não existir
-                await this.createGistIfNotExists();
-                
-                // Carregar mensagens iniciais
-                await this.loadMessages();
-                
-                // Iniciar sincronização
-                this.startSync();
-                
-                // Atualizar status
-                this.updateStatus('Conectado');
-            }
-
-            async createGistIfNotExists() {
                 try {
-                    const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
+                    this.ws = new WebSocket(this.wsUrl);
                     
-                    if (response.status === 404) {
-                        // Criar novo gist
-                        const gistData = {
-                            description: `Chat WhatsApp Clone: ${this.gistId}`,
-                            public: false,
-                            files: {
-                                'messages.json': {
-                                    content: JSON.stringify([], null, 2)
-                                },
-                                'metadata.json': {
-                                    content: JSON.stringify({
-                                        created: new Date().toISOString(),
-                                        lastUpdate: new Date().toISOString()
-                                    }, null, 2)
-                                }
-                            }
-                        };
+                    this.ws.onopen = () => {
+                        console.log('✅ Conectado ao servidor WebSocket');
+                        this.isConnected = true;
+                        this.updateConnectionStatus(true);
+                        this.updateConnectionInfo(`Conectado como ${this.userName}`);
                         
-                        const createResponse = await fetch('https://api.github.com/gists', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `token ${this.githubToken}`,
-                                'Accept': 'application/vnd.github.v3+json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(gistData)
-                        });
+                        // Entrar na sala
+                        this.ws.send(JSON.stringify({
+                            type: 'join',
+                            room: this.roomName,
+                            userName: this.userName
+                        }));
                         
-                        if (createResponse.ok) {
-                            console.log('✅ Gist criado com sucesso');
-                        } else {
-                            throw new Error('Falha ao criar gist');
-                        }
-                    } else if (response.ok) {
-                        console.log('✅ Gist existe');
-                    } else {
-                        throw new Error('Erro ao verificar gist');
-                    }
-                } catch (error) {
-                    console.error('❌ Erro:', error);
-                    alert('❌ Erro ao conectar com GitHub. Verifique o token e o nome do gist.');
-                    this.goBack();
-                }
-            }
-
-            async loadMessages() {
-                try {
-                    const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const gist = await response.json();
-                        const messagesFile = gist.files['messages.json'];
-                        
-                        if (messagesFile) {
-                            this.messages = JSON.parse(messagesFile.content);
-                            this.renderAllMessages();
-                            console.log(`📨 ${this.messages.length} mensagens carregadas`);
-                        }
-                    } else {
-                        console.error('❌ Erro ao carregar mensagens');
-                    }
-                } catch (error) {
-                    console.error('❌ Erro:', error);
-                    this.updateStatus('Erro de conexão');
-                }
-            }
-
-            async saveMessages() {
-                try {
-                    const gistData = {
-                        files: {
-                            'messages.json': {
-                                content: JSON.stringify(this.messages, null, 2)
-                            },
-                            'metadata.json': {
-                                content: JSON.stringify({
-                                    lastUpdate: new Date().toISOString(),
-                                    messageCount: this.messages.length
-                                }, null, 2)
-                            }
+                        // Parar reconexão automática se estiver conectado
+                        if (this.reconnectInterval) {
+                            clearInterval(this.reconnectInterval);
+                            this.reconnectInterval = null;
                         }
                     };
                     
-                    const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(gistData)
-                    });
+                    this.ws.onmessage = (event) => {
+                        const message = JSON.parse(event.data);
+                        this.handleMessage(message);
+                    };
                     
-                    if (response.ok) {
-                        console.log('✅ Mensagens salvas');
-                        this.lastSync = Date.now();
-                    } else {
-                        console.error('❌ Erro ao salvar mensagens');
-                        this.updateStatus('Erro ao salvar');
-                    }
+                    this.ws.onclose = () => {
+                        console.log('❌ Desconectado do servidor');
+                        this.isConnected = false;
+                        this.updateConnectionStatus(false);
+                        this.updateConnectionInfo('Desconectado');
+                        
+                        // Iniciar reconexão automática
+                        this.startAutoReconnect();
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        console.error('❌ Erro WebSocket:', error);
+                        this.updateConnectionInfo('Erro de conexão');
+                    };
+                    
                 } catch (error) {
-                    console.error('❌ Erro:', error);
-                    this.updateStatus('Erro de conexão');
+                    console.error('❌ Erro ao conectar:', error);
+                    this.updateConnectionInfo('Erro ao conectar');
+                    this.startAutoReconnect();
                 }
             }
 
-            startSync() {
-                // Sincronizar a cada 3 segundos
-                this.syncInterval = setInterval(() => {
-                    this.loadMessages();
-                }, 3000);
+            disconnect() {
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
                 
-                console.log('🔄 Sincronização iniciada');
+                this.stopAutoReconnect();
+                localStorage.removeItem('wsUrl');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('roomName');
+                
+                location.reload();
             }
 
-            stopSync() {
-                if (this.syncInterval) {
-                    clearInterval(this.syncInterval);
-                    this.syncInterval = null;
-                    console.log('⏹️ Sincronização parada');
+            startAutoReconnect() {
+                if (this.reconnectInterval) return;
+                
+                this.reconnectInterval = setInterval(() => {
+                    console.log('🔄 Tentando reconectar...');
+                    this.connect();
+                }, 5000); // Reconectar a cada 5 segundos
+            }
+
+            stopAutoReconnect() {
+                if (this.reconnectInterval) {
+                    clearInterval(this.reconnectInterval);
+                    this.reconnectInterval = null;
+                }
+            }
+
+            handleMessage(message) {
+                console.log('📨 Mensagem recebida:', message);
+                
+                if (message.type === 'message') {
+                    this.addMessage(message);
                 }
             }
 
             sendMessage() {
+                if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                    alert('❌ Não conectado ao servidor');
+                    return;
+                }
+                
                 const input = document.getElementById('messageInput');
                 const text = input.value.trim();
                 
                 if (!text && !this.currentFile) return;
                 
                 const message = {
-                    id: Date.now(),
+                    type: 'message',
                     text: text,
-                    timestamp: new Date().toISOString(),
-                    type: this.currentFile ? 'file' : 'text',
                     fileData: this.currentFile,
-                    sender: `user_${Math.random().toString(36).substr(2, 9)}`
+                    room: this.roomName,
+                    timestamp: new Date().toISOString()
                 };
                 
-                this.addMessage(message);
+                // Enviar para o servidor
+                this.ws.send(JSON.stringify(message));
+                
+                // Adicionar na própria tela (como enviada)
+                this.addSentMessage(message);
+                
+                // Limpar input
                 input.value = '';
                 this.currentFile = null;
                 input.placeholder = 'Digite uma mensagem...';
-                
-                // Salvar imediatamente
-                this.saveMessages();
             }
 
             addMessage(message) {
-                this.messages.push(message);
-                this.renderMessage(message);
-                this.scrollToBottom();
-            }
-
-            renderMessage(message) {
                 const messagesList = document.getElementById('messagesList');
                 if (!messagesList) return;
                 
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message received`; // Todos são "received" para não ter lado
-                messageDiv.style.background = '#ffffff'; // Fundo branco para todos
+                messageDiv.className = `message received`;
+                messageDiv.style.background = '#ffffff';
                 
                 const time = new Date(message.timestamp);
                 const timeStr = time.toLocaleTimeString('pt-BR', { 
@@ -574,9 +629,9 @@
                 
                 let content = '';
                 
-                if (message.type === 'text') {
-                    content = `<div><strong>${message.sender.substr(0, 8)}:</strong> ${this.escapeHtml(message.text)}</div>`;
-                } else if (message.type === 'file' && message.fileData) {
+                if (message.text) {
+                    content = `<div><strong>${message.userName || 'Anônimo'}:</strong> ${this.escapeHtml(message.text)}</div>`;
+                } else if (message.fileData) {
                     content = this.renderFile(message.fileData);
                 }
                 
@@ -586,14 +641,36 @@
                 `;
                 
                 messagesList.appendChild(messageDiv);
+                this.scrollToBottom();
             }
 
-            renderAllMessages() {
+            addSentMessage(message) {
                 const messagesList = document.getElementById('messagesList');
                 if (!messagesList) return;
                 
-                messagesList.innerHTML = '';
-                this.messages.forEach(message => this.renderMessage(message));
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message sent`;
+                
+                const time = new Date(message.timestamp);
+                const timeStr = time.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                let content = '';
+                
+                if (message.text) {
+                    content = `<div>${this.escapeHtml(message.text)}</div>`;
+                } else if (message.fileData) {
+                    content = this.renderFile(message.fileData);
+                }
+                
+                messageDiv.innerHTML = `
+                    ${content}
+                    <div class="message-time">${timeStr}</div>
+                `;
+                
+                messagesList.appendChild(messageDiv);
                 this.scrollToBottom();
             }
 
@@ -637,27 +714,33 @@
                 reader.readAsDataURL(file);
             }
 
-            shareChat() {
-                const shareText = `🚀 Chat WhatsApp Clone\n\n🔗 Token: ${this.githubToken}\n📋 Gist: ${this.gistId}\n\nCompartilhe essas credenciais para sincronizar!`;
+            shareRoom() {
+                const shareText = `🚀 Chat Real-Time\n\n🌐 Servidor: ${this.wsUrl}\n👤 Usuário: ${this.userName}\n🏠 Sala: ${this.roomName}\n\nCompartilhe a sala para conversar!`;
                 
                 navigator.clipboard.writeText(shareText).then(() => {
-                    alert('🔗 Credenciais copiadas! Compartilhe com cuidado.');
+                    alert('🔗 Informações copiadas! Compartilhe com outras pessoas.');
                 }).catch(() => {
-                    alert(`🔗 Copie manualmente:\n\nToken: ${this.githubToken}\nGist: ${this.gistId}`);
+                    alert(`🔗 Copie manualmente:\n\nServidor: ${this.wsUrl}\nSala: ${this.roomName}`);
                 });
             }
 
-            goBack() {
-                this.stopSync();
-                localStorage.removeItem('githubToken');
-                localStorage.removeItem('gistId');
-                location.reload();
+            updateConnectionStatus(connected) {
+                const statusElement = document.querySelector('.connection-status');
+                if (!statusElement) {
+                    const status = document.createElement('div');
+                    status.className = 'connection-status';
+                    document.body.appendChild(status);
+                }
+                
+                const status = document.querySelector('.connection-status');
+                status.textContent = connected ? 'Conectado' : 'Desconectado';
+                status.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
             }
 
-            updateStatus(status) {
-                const statusElement = document.getElementById('syncStatus');
-                if (statusElement) {
-                    statusElement.textContent = status;
+            updateConnectionInfo(info) {
+                const infoElement = document.getElementById('connectionInfo');
+                if (infoElement) {
+                    infoElement.textContent = info;
                 }
             }
 
@@ -677,7 +760,7 @@
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 WhatsApp Clone com GitHub Gists');
+            console.log('🚀 WhatsApp Clone com ngrok WebSocket');
             new WhatsAppClone();
         });
     </script>
