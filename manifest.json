@@ -1,0 +1,17 @@
+{
+    "name": "WhatsApp Clone",
+    "short_name": "WA Clone",
+    "description": "Sistema de chat privado que funciona no navegador",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#25D366",
+    "theme_color": "#25D366",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%2325D366'/><path d='M256 50c114.7 0 208 93.3 208 208s-93.3 208-208 208S48 372.7 48 258 141.3 50 256 50zm-38.6 298.8l82.1 44.8-15.3-90.9 75.8-74-104.7-15.2-46.9-95-46.9 95-104.7 15.2 75.8 74-15.3 90.9 82.1-44.8z' fill='white'/></svg>",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+        }
+    ]
+}
