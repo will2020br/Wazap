@@ -3,766 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Clone Real-Time</title>
+    <title>Chat Simples - ngrok</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        :root {
-            --primary: #25D366;
-            --primary-dark: #128C7E;
-            --background: #f0f2f5;
-            --chat-bg: #e5ddd5;
-            --message-sent: #dcf8c6;
-            --message-received: #ffffff;
-            --text-primary: #1b1b1b;
-            --text-secondary: #6b6b6b;
-            --danger: #f44336;
-        }
-
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--background); }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
         
-        .welcome-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
         
-        .welcome-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            max-width: 400px;
-            margin: 20px;
-        }
+        .header { background: #25D366; color: white; padding: 20px; text-align: center; }
         
-        .setup-form {
-            text-align: left;
-            margin: 20px 0;
-        }
+        .connection-box { padding: 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; }
         
-        .form-group {
-            margin-bottom: 15px;
-        }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
+        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
         
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-        }
+        button { background: #25D366; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; }
         
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 15px 30px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-        }
+        button:hover { background: #128C7E; }
         
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+        .status { padding: 10px; text-align: center; font-size: 12px; }
         
-        .btn-danger:hover {
-            background: #d32f2f;
-        }
-
-        .chat-screen {
-            display: none;
-            flex-direction: column;
-            height: 100vh;
-            background: var(--chat-bg);
-        }
+        .status.connected { background: #d4edda; color: #155724; }
         
-        .chat-header {
-            background: var(--primary-dark);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .status.disconnected { background: #f8d7da; color: #721c24; }
         
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background-image: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="%23e5ddd5" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="%23e5ddd5"/><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-        }
+        .chat-box { height: 400px; overflow-y: auto; padding: 20px; background: #e5ddd5; }
         
-        .chat-input {
-            background: white;
-            padding: 15px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .message { margin-bottom: 15px; max-width: 70%; padding: 10px 15px; border-radius: 18px; word-wrap: break-word; }
         
-        .message {
-            max-width: 70%;
-            padding: 10px 15px;
-            border-radius: 18px;
-            margin-bottom: 10px;
-            word-wrap: break-word;
-        }
+        .message.sent { background: #dcf8c6; margin-left: auto; border-bottom-right-radius: 4px; }
         
-        .message.sent {
-            background: var(--message-sent);
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
+        .message.received { background: white; margin-right: auto; border-bottom-left-radius: 4px; }
         
-        .message.received {
-            background: var(--message-received);
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
+        .message-time { font-size: 10px; color: #666; text-align: right; margin-top: 5px; }
         
-        .message-time {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-align: right;
-            margin-top: 5px;
-        }
+        .input-box { display: flex; gap: 10px; padding: 15px; background: #f8f9fa; border-top: 1px solid #ddd; }
         
-        #messageInput {
-            flex: 1;
-            border: none;
-            background: var(--background);
-            border-radius: 25px;
-            padding: 12px 20px;
-            font-size: 16px;
-            outline: none;
-        }
+        .input-box input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; }
         
-        .btn-send, .btn-icon, .btn-attach {
-            background: var(--primary);
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: white;
-            transition: all 0.3s ease;
-        }
+        .simple-instructions { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; font-size: 13px; }
         
-        .btn-send:hover { background: var(--primary-dark); transform: scale(1.05); }
-        .btn-icon { background: transparent; color: white; width: 40px; height: 40px; }
-        .btn-attach { background: transparent; color: #54656f; }
+        .simple-instructions ol { margin-left: 20px; }
         
-        .connection-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 1000;
-        }
-        
-        .connection-status.connected {
-            background: var(--primary);
-        }
-        
-        .connection-status.disconnected {
-            background: var(--danger);
-        }
-        
-        .ngrok-setup {
-            background: var(--background);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        
-        .ngrok-setup h3 {
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
-        
-        .ngrok-setup ol {
-            margin-left: 20px;
-            color: var(--text-secondary);
-        }
-        
-        .ngrok-setup li {
-            margin-bottom: 5px;
-        }
-        
-        .code-block {
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 10px 0;
-            font-family: monospace;
-            font-size: 12px;
-            word-break: break-all;
-        }
-        
-        input[type="file"] { display: none; }
-        
-        @media (max-width: 768px) {
-            .message { max-width: 85%; }
-        }
+        .copy-btn { background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 10px; }
     </style>
 </head>
 <body>
-    <!-- TELA DE CONEXÃO -->
-    <div id="connectionScreen" class="welcome-screen">
-        <div class="welcome-card">
-            <div class="logo">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v-2h-4v2zm0-4h4V6h-4v2z" fill="#25D366"/>
-                </svg>
-            </div>
-            <h1>WhatsApp Clone Real-Time</h1>
-            <p>Conexão via ngrok WebSocket</p>
-            
-            <div class="ngrok-setup">
-                <h3>📋 Configuração do Servidor</h3>
+    <div class="container">
+        <div class="header">
+            <h2>💬 Chat Simples com ngrok</h2>
+            <p>Só colar a URL e conectar!</p>
+        </div>
+        
+        <div class="connection-box">
+            <div class="simple-instructions">
+                <strong>📋 Como usar:</strong>
                 <ol>
-                    <li>Baixe e instale o ngrok: <strong>https://ngrok.com/download</strong></li>
-                    <li>Crie uma conta no ngrok (grátis)</li>
-                    <li>Obtenha seu token authtoken</li>
-                    <li>Execute no terminal:</li>
+                    <li>Execute: <code>ngrok tcp 8080</code> no terminal</li>
+                    <li>Copie a URL (ex: <code>tcp://0.tcp.ngrok.io:12345</code>)</li>
+                    <li>Cole abaixo e clique em Conectar</li>
                 </ol>
-                <div class="code-block">
-                    ngrok authtoken SEU_TOKEN_AQUI<br>
-                    ngrok tcp 8080
-                </div>
-                <li>Copie a URL gerada (ex: <code>tcp://0.tcp.ngrok.io:12345</code>)</li>
-                <li>Execute o servidor WebSocket (código abaixo)</li>
             </div>
             
-            <div class="setup-form">
-                <div class="form-group">
-                    <label>URL do Servidor WebSocket:</label>
-                    <input type="text" id="wsUrl" placeholder="ws://0.tcp.ngrok.io:12345" value="">
-                </div>
-                <div class="form-group">
-                    <label>Seu Nome:</label>
-                    <input type="text" id="userName" placeholder="Seu Nome" value="">
-                </div>
-                <div class="form-group">
-                    <label>Sala (compartilhe este nome):</label>
-                    <input type="text" id="roomName" placeholder="minha-sala-privada" value="">
-                </div>
+            <div class="input-group">
+                <input type="text" id="ngrokUrl" placeholder="Cole aqui: tcp://0.tcp.ngrok.io:12345">
+                <button id="connectBtn" onclick="connectToNgrok()">Conectar</button>
             </div>
             
-            <button id="connectBtn" class="btn-primary">
-                Conectar ao Servidor
-            </button>
+            <div class="input-group">
+                <input type="text" id="userName" placeholder="Seu nome" value="Usuário">
+                <input type="text" id="roomName" placeholder="Nome da sala" value="sala1">
+            </div>
             
-            <div style="margin-top: 20px;">
-                <details>
-                    <summary style="cursor: pointer; color: #666;">📄 Código do Servidor WebSocket</summary>
-                    <div class="code-block">
-// 📄 server.js - Salve e execute com: node server.js<br>
-const WebSocket = require('ws');<br>
-const http = require('http');<br>
-<br>
-const server = http.createServer();<br>
-const wss = new WebSocket.Server({ server });<br>
-<br>
-const rooms = new Map();<br>
-<br>
-wss.on('connection', (ws) => {<br>
-&nbsp;&nbsp;let currentRoom = null;<br>
-&nbsp;&nbsp;let userName = null;<br>
-<br>
-&nbsp;&nbsp;ws.on('message', (data) => {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const msg = JSON.parse(data);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;switch(msg.type) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case 'join':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currentRoom = msg.room;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userName = msg.userName;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!rooms.has(currentRoom)) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.set(currentRoom, new Set());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.get(currentRoom).add(ws);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case 'message':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (currentRoom && rooms.has(currentRoom)) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const message = {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...msg,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timestamp: new Date().toISOString(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userName: userName<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.get(currentRoom).forEach(client => {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (client !== ws && client.readyState === WebSocket.OPEN) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.send(JSON.stringify(message));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;});<br>
-<br>
-&nbsp;&nbsp;ws.on('close', () => {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if (currentRoom && rooms.has(currentRoom)) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rooms.get(currentRoom).delete(ws);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;});<br>
-});<br>
-<br>
-server.listen(8080, () => {<br>
-&nbsp;&nbsp;console.log('🚀 Servidor WebSocket rodando na porta 8080');<br>
-&nbsp;&nbsp;console.log('📋 Execute: ngrok tcp 8080');<br>
-&nbsp;&nbsp;console.log('🔗 Copie a URL ws://... e cole no campo acima');<br>
-});
-                    </div>
-                </details>
+            <div id="status" class="status" style="display: none;"></div>
+        </div>
+        
+        <div id="chatArea" style="display: none;">
+            <div class="chat-box" id="messagesList"></div>
+            <div class="input-box">
+                <input type="text" id="messageInput" placeholder="Digite uma mensagem..." disabled>
+                <button id="sendBtn" onclick="sendMessage()" disabled>Enviar</button>
             </div>
         </div>
     </div>
 
-    <!-- TELA DO CHAT -->
-    <div id="chatScreen" class="chat-screen">
-        <header class="chat-header">
-            <button id="backBtn" class="btn-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/>
-                </svg>
-            </button>
-            <div style="flex: 1;">
-                <h3 id="chatTitle">Chat Real-Time</h3>
-                <small id="connectionInfo">Conectando...</small>
-            </div>
-            <button id="shareBtn" class="btn-icon" title="Compartilhar Sala">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="white"/>
-                </svg>
-            </button>
-        </header>
-
-        <main class="chat-messages" id="messagesContainer">
-            <div id="messagesList"></div>
-        </main>
-
-        <footer class="chat-input">
-            <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
-            <button id="attachBtn" class="btn-attach">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#54656f"/>
-                </svg>
-            </button>
-            <input type="text" id="messageInput" placeholder="Digite uma mensagem..." autocomplete="off">
-            <button id="sendBtn" class="btn-send">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/>
-                </svg>
-            </button>
-        </footer>
-    </div>
-
     <script>
-        class WhatsAppClone {
-            constructor() {
-                this.ws = null;
-                this.wsUrl = localStorage.getItem('wsUrl') || '';
-                this.userName = localStorage.getItem('userName') || '';
-                this.roomName = localStorage.getItem('roomName') || '';
-                this.currentFile = null;
-                this.reconnectInterval = null;
-                this.isConnected = false;
-                
-                this.init();
+        let ws = null;
+        let isConnected = false;
+        let userName = '';
+        let roomName = '';
+
+        function connectToNgrok() {
+            const ngrokUrl = document.getElementById('ngrokUrl').value.trim();
+            userName = document.getElementById('userName').value.trim() || 'Usuário';
+            roomName = document.getElementById('roomName').value.trim() || 'sala1';
+            
+            if (!ngrokUrl) {
+                alert('❌ Cole a URL do ngrok!');
+                return;
             }
-
-            init() {
-                console.log('🚀 WhatsApp Clone com ngrok WebSocket');
+            
+            // Converte tcp:// para ws://
+            let wsUrl = ngrokUrl.replace('tcp://', 'ws://');
+            
+            console.log('🔄 Conectando a:', wsUrl);
+            updateStatus('Conectando...', 'disconnected');
+            
+            try {
+                ws = new WebSocket(wsUrl);
                 
-                if (this.wsUrl && this.userName && this.roomName) {
-                    this.connect();
-                } else {
-                    this.showConnectionScreen();
-                }
-                
-                this.setupEventListeners();
-            }
-
-            setupEventListeners() {
-                const connectBtn = document.getElementById('connectBtn');
-                const sendBtn = document.getElementById('sendBtn');
-                const messageInput = document.getElementById('messageInput');
-                const attachBtn = document.getElementById('attachBtn');
-                const fileInput = document.getElementById('fileInput');
-                const backBtn = document.getElementById('backBtn');
-                const shareBtn = document.getElementById('shareBtn');
-
-                if (connectBtn) {
-                    connectBtn.addEventListener('click', () => this.saveConnection());
-                }
-                
-                if (sendBtn) sendBtn.addEventListener('click', () => this.sendMessage());
-                if (messageInput) {
-                    messageInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') this.sendMessage();
-                    });
-                }
-                if (attachBtn) attachBtn.addEventListener('click', () => fileInput.click());
-                if (fileInput) fileInput.addEventListener('change', (e) => this.handleFile(e));
-                if (backBtn) backBtn.addEventListener('click', () => this.disconnect());
-                if (shareBtn) shareBtn.addEventListener('click', () => this.shareRoom());
-            }
-
-            showConnectionScreen() {
-                document.getElementById('connectionScreen').style.display = 'flex';
-                document.getElementById('chatScreen').style.display = 'none';
-            }
-
-            showChatScreen() {
-                document.getElementById('connectionScreen').style.display = 'none';
-                document.getElementById('chatScreen').style.display = 'flex';
-                document.getElementById('chatTitle').textContent = `Sala: ${this.roomName}`;
-            }
-
-            saveConnection() {
-                const wsUrl = document.getElementById('wsUrl').value.trim();
-                const userName = document.getElementById('userName').value.trim();
-                const roomName = document.getElementById('roomName').value.trim();
-                
-                if (!wsUrl || !userName || !roomName) {
-                    alert('❌ Preencha todos os campos');
-                    return;
-                }
-                
-                // Converter ws:// para wss:// se necessário
-                let finalUrl = wsUrl;
-                if (!finalUrl.startsWith('ws://') && !finalUrl.startsWith('wss://')) {
-                    finalUrl = 'ws://' + finalUrl;
-                }
-                
-                // Salvar configuração
-                localStorage.setItem('wsUrl', finalUrl);
-                localStorage.setItem('userName', userName);
-                localStorage.setItem('roomName', roomName);
-                
-                this.wsUrl = finalUrl;
-                this.userName = userName;
-                this.roomName = roomName;
-                
-                this.connect();
-            }
-
-            connect() {
-                this.showChatScreen();
-                this.updateConnectionInfo('Conectando...');
-                
-                try {
-                    this.ws = new WebSocket(this.wsUrl);
+                ws.onopen = function() {
+                    console.log('✅ Conectado!');
+                    isConnected = true;
+                    updateStatus('Conectado', 'connected');
+                    document.getElementById('chatArea').style.display = 'block';
+                    document.getElementById('messageInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
                     
-                    this.ws.onopen = () => {
-                        console.log('✅ Conectado ao servidor WebSocket');
-                        this.isConnected = true;
-                        this.updateConnectionStatus(true);
-                        this.updateConnectionInfo(`Conectado como ${this.userName}`);
-                        
-                        // Entrar na sala
-                        this.ws.send(JSON.stringify({
-                            type: 'join',
-                            room: this.roomName,
-                            userName: this.userName
-                        }));
-                        
-                        // Parar reconexão automática se estiver conectado
-                        if (this.reconnectInterval) {
-                            clearInterval(this.reconnectInterval);
-                            this.reconnectInterval = null;
-                        }
-                    };
+                    // Entrar na sala
+                    ws.send(JSON.stringify({
+                        type: 'join',
+                        room: roomName,
+                        userName: userName
+                    }));
                     
-                    this.ws.onmessage = (event) => {
-                        const message = JSON.parse(event.data);
-                        this.handleMessage(message);
-                    };
-                    
-                    this.ws.onclose = () => {
-                        console.log('❌ Desconectado do servidor');
-                        this.isConnected = false;
-                        this.updateConnectionStatus(false);
-                        this.updateConnectionInfo('Desconectado');
-                        
-                        // Iniciar reconexão automática
-                        this.startAutoReconnect();
-                    };
-                    
-                    this.ws.onerror = (error) => {
-                        console.error('❌ Erro WebSocket:', error);
-                        this.updateConnectionInfo('Erro de conexão');
-                    };
-                    
-                } catch (error) {
-                    console.error('❌ Erro ao conectar:', error);
-                    this.updateConnectionInfo('Erro ao conectar');
-                    this.startAutoReconnect();
-                }
-            }
-
-            disconnect() {
-                if (this.ws) {
-                    this.ws.close();
-                    this.ws = null;
-                }
-                
-                this.stopAutoReconnect();
-                localStorage.removeItem('wsUrl');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('roomName');
-                
-                location.reload();
-            }
-
-            startAutoReconnect() {
-                if (this.reconnectInterval) return;
-                
-                this.reconnectInterval = setInterval(() => {
-                    console.log('🔄 Tentando reconectar...');
-                    this.connect();
-                }, 5000); // Reconectar a cada 5 segundos
-            }
-
-            stopAutoReconnect() {
-                if (this.reconnectInterval) {
-                    clearInterval(this.reconnectInterval);
-                    this.reconnectInterval = null;
-                }
-            }
-
-            handleMessage(message) {
-                console.log('📨 Mensagem recebida:', message);
-                
-                if (message.type === 'message') {
-                    this.addMessage(message);
-                }
-            }
-
-            sendMessage() {
-                if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                    alert('❌ Não conectado ao servidor');
-                    return;
-                }
-                
-                const input = document.getElementById('messageInput');
-                const text = input.value.trim();
-                
-                if (!text && !this.currentFile) return;
-                
-                const message = {
-                    type: 'message',
-                    text: text,
-                    fileData: this.currentFile,
-                    room: this.roomName,
-                    timestamp: new Date().toISOString()
+                    addMessage(`🎉 Você entrou na sala ${roomName}`, 'sistema');
                 };
                 
-                // Enviar para o servidor
-                this.ws.send(JSON.stringify(message));
-                
-                // Adicionar na própria tela (como enviada)
-                this.addSentMessage(message);
-                
-                // Limpar input
-                input.value = '';
-                this.currentFile = null;
-                input.placeholder = 'Digite uma mensagem...';
-            }
-
-            addMessage(message) {
-                const messagesList = document.getElementById('messagesList');
-                if (!messagesList) return;
-                
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message received`;
-                messageDiv.style.background = '#ffffff';
-                
-                const time = new Date(message.timestamp);
-                const timeStr = time.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                let content = '';
-                
-                if (message.text) {
-                    content = `<div><strong>${message.userName || 'Anônimo'}:</strong> ${this.escapeHtml(message.text)}</div>`;
-                } else if (message.fileData) {
-                    content = this.renderFile(message.fileData);
-                }
-                
-                messageDiv.innerHTML = `
-                    ${content}
-                    <div class="message-time">${timeStr}</div>
-                `;
-                
-                messagesList.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            addSentMessage(message) {
-                const messagesList = document.getElementById('messagesList');
-                if (!messagesList) return;
-                
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message sent`;
-                
-                const time = new Date(message.timestamp);
-                const timeStr = time.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                let content = '';
-                
-                if (message.text) {
-                    content = `<div>${this.escapeHtml(message.text)}</div>`;
-                } else if (message.fileData) {
-                    content = this.renderFile(message.fileData);
-                }
-                
-                messageDiv.innerHTML = `
-                    ${content}
-                    <div class="message-time">${timeStr}</div>
-                `;
-                
-                messagesList.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            renderFile(fileData) {
-                const { type, name, url } = fileData;
-                
-                if (type.startsWith('image/')) {
-                    return `<div style="margin: 5px 0;"><img src="${url}" alt="${name}" style="max-width: 200px; border-radius: 12px; cursor: pointer;" onclick="window.open('${url}', '_blank')"></div>`;
-                } else if (type.startsWith('video/')) {
-                    return `<div style="margin: 5px 0;"><video controls style="max-width: 200px; border-radius: 12px;"><source src="${url}" type="${type}"></video></div>`;
-                } else if (type.startsWith('audio/')) {
-                    return `<div style="margin: 5px 0;"><audio controls style="width: 200px;"><source src="${url}" type="${type}"></audio></div>`;
-                } else {
-                    return `<div style="margin: 5px 0;"><a href="${url}" download="${name}" style="color: #128C7E; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.83V19h2v-4.17l1.59 1.59L16 15.01 12 11z" fill="#128C7E"/>
-                        </svg>
-                        ${name}
-                    </a></div>`;
-                }
-            }
-
-            handleFile(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.currentFile = {
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        url: e.target.result
-                    };
+                ws.onmessage = function(event) {
+                    console.log('📨 Mensagem:', event.data);
+                    const msg = JSON.parse(event.data);
                     
-                    const input = document.getElementById('messageInput');
-                    input.placeholder = `Anexo: ${file.name}`;
-                    input.style.fontStyle = 'italic';
+                    if (msg.type === 'message') {
+                        const sender = msg.userName === userName ? 'Você' : msg.userName;
+                        addMessage(`${sender}: ${msg.text}`, msg.userName === userName ? 'sent' : 'received');
+                    }
                 };
                 
-                reader.readAsDataURL(file);
-            }
-
-            shareRoom() {
-                const shareText = `🚀 Chat Real-Time\n\n🌐 Servidor: ${this.wsUrl}\n👤 Usuário: ${this.userName}\n🏠 Sala: ${this.roomName}\n\nCompartilhe a sala para conversar!`;
+                ws.onclose = function() {
+                    console.log('🔌 Desconectado');
+                    isConnected = false;
+                    updateStatus('Desconectado', 'disconnected');
+                    document.getElementById('chatArea').style.display = 'none';
+                    document.getElementById('messageInput').disabled = true;
+                    document.getElementById('sendBtn').disabled = true;
+                };
                 
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert('🔗 Informações copiadas! Compartilhe com outras pessoas.');
-                }).catch(() => {
-                    alert(`🔗 Copie manualmente:\n\nServidor: ${this.wsUrl}\nSala: ${this.roomName}`);
-                });
-            }
-
-            updateConnectionStatus(connected) {
-                const statusElement = document.querySelector('.connection-status');
-                if (!statusElement) {
-                    const status = document.createElement('div');
-                    status.className = 'connection-status';
-                    document.body.appendChild(status);
-                }
+                ws.onerror = function(error) {
+                    console.error('❌ Erro:', error);
+                    updateStatus('Erro de conexão', 'disconnected');
+                    alert('❌ Erro ao conectar!\n\nVerifique:\n1. ngrok está rodando?\n2. A URL está correta?\n3. O servidor está ativo?');
+                };
                 
-                const status = document.querySelector('.connection-status');
-                status.textContent = connected ? 'Conectado' : 'Desconectado';
-                status.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
-            }
-
-            updateConnectionInfo(info) {
-                const infoElement = document.getElementById('connectionInfo');
-                if (infoElement) {
-                    infoElement.textContent = info;
-                }
-            }
-
-            scrollToBottom() {
-                const container = document.getElementById('messagesContainer');
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
-                }
-            }
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                updateStatus('Erro ao conectar', 'disconnected');
+                alert('❌ Erro: ' + error.message);
             }
         }
 
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 WhatsApp Clone com ngrok WebSocket');
-            new WhatsAppClone();
+        function sendMessage() {
+            if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
+                alert('❌ Não conectado!');
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const message = {
+                type: 'message',
+                text: text,
+                room: roomName,
+                userName: userName,
+                timestamp: new Date().toISOString()
+            };
+            
+            ws.send(JSON.stringify(message));
+            input.value = '';
+        }
+
+        function addMessage(text, type) {
+            const messagesList = document.getElementById('messagesList');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            messagesList.appendChild(messageDiv);
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        function updateStatus(text, type) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        // Permitir conectar com Enter
+        document.getElementById('ngrokUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') connectToNgrok();
         });
+        
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Debug
+        console.log('🚀 Chat simples carregado!');
     </script>
 </body>
 </html>
