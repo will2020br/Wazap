@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Cloudflare Tunnel - Gratuito</title>
+    <title>Chat Alternativas Grátis</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -73,7 +73,9 @@
         
         .chat-input button:hover { background: #128C7E; transform: scale(1.05); }
         
-        .copy-btn { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 10px; }
+        .chat-input button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        
+        .copy-btn { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
         
         .copy-btn:hover { background: #138496; }
         
@@ -91,56 +93,49 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💬 Chat Cloudflare Tunnel</h1>
-            <p>100% gratuito com TLS automático</p>
+            <h1>💬 Chat Alternativas Grátis</h1>
+            <p>TLS gratuito sem ngrok pago</p>
         </div>
         
         <div id="setupArea" class="setup-area">
-            <h3 style="margin-bottom: 20px; color: #495057;">Escolha sua solução:</h3>
+            <h3 style="margin-bottom: 20px; color: #495057;">Escolha uma opção GRÁTIS:</h3>
             
-            <div class="option-card" onclick="selectOption('cloudflare')" id="cloudflareCard">
-                <div class="option-title">🚀 Cloudflare Tunnel (RECOMENDADO)</div>
+            <!-- Botões com onclick direto -->
+            <button class="option-card" onclick="selectCloudflare()" id="cloudflareBtn">
+                <div class="option-title">🚀 Cloudflare Tunnel</div>
                 <div class="option-description">TLS automático, gratuito, sem limites</div>
                 <div class="option-price">✅ 100% GRATUITO</div>
-            </div>
+            </button>
             
-            <div class="option-card" onclick="selectOption('localtunnel')" id="localtunnelCard">
+            <button class="option-card" onclick="selectLocaltunnel()" id="localtunnelBtn">
                 <div class="option-title">⚡ Localtunnel</div>
-                <div class="option-description">Simples, rápido, sem configuração</div>
+                <div class="option-description">Simples, rápido, sem instalação</div>
                 <div class="option-price">✅ 100% GRATUITO</div>
-            </div>
+            </button>
             
-            <div class="option-card" onclick="selectOption('pinggy')" id="pinggyCard">
+            <button class="option-card" onclick="selectPinggy()" id="pinggyBtn">
                 <div class="option-title">🎯 Pinggy</div>
-                <div class="option-description">Barato, com TLS gratuito</div>
-                <div class="option-price">✅ Grátis / $3/mês</div>
-            </div>
+                <div class="option-description">TCP/UDP com TLS gratuito</div>
+                <div class="option-price">✅ Grátis</div>
+            </button>
             
-            <div id="cloudflareSetup" class="input-group" style="display: none;">
+            <!-- Campos de entrada (inicialmente ocultos) -->
+            <div id="cloudflareInput" class="input-group" style="display: none;">
                 <label>URL do Cloudflare Tunnel:</label>
-                <div style="display: flex; align-items: center;">
-                    <input type="text" id="cloudflareUrl" placeholder="https://seu-tunnel.cloudflare.com">
-                    <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
-                </div>
-                <div class="help-text">Use <code>cloudflared tunnel --url localhost:8080</code> para criar</div>
+                <input type="text" id="cloudflareUrl" placeholder="https://seu-tunnel.cloudflare.com">
+                <div class="help-text">Use: cloudflared tunnel --url localhost:8080</div>
             </div>
             
-            <div id="localtunnelSetup" class="input-group" style="display: none;">
+            <div id="localtunnelInput" class="input-group" style="display: none;">
                 <label>URL do Localtunnel:</label>
-                <div style="display: flex; align-items: center;">
-                    <input type="text" id="localtunnelUrl" placeholder="https://abcde.loca.lt">
-                    <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
-                </div>
-                <div class="help-text">Use <code>npx localtunnel --port 8080</code> para criar</div>
+                <input type="text" id="localtunnelUrl" placeholder="https://abcde.loca.lt">
+                <div class="help-text">Use: npx localtunnel --port 8080</div>
             </div>
             
-            <div id="pinggySetup" class="input-group" style="display: none;">
+            <div id="pinggyInput" class="input-group" style="display: none;">
                 <label>URL do Pinggy:</label>
-                <div style="display: flex; align-items: center;">
-                    <input type="text" id="pinggyUrl" placeholder="https://tcp.t pinggy.io:12345">
-                    <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
-                </div>
-                <div class="help-text">Use <code>ssh -p 443 -R0:localhost:8080 a.pinggy.io</code> para criar</div>
+                <input type="text" id="pinggyUrl" placeholder="wss://tcp.pinggy.io:12345">
+                <div class="help-text">Use: ssh -p 443 -R0:localhost:8080 a.pinggy.io</div>
             </div>
             
             <div class="input-group">
@@ -174,333 +169,242 @@
     </div>
 
     <script>
-        class CloudflareChat {
-            constructor() {
-                this.ws = null;
-                this.isConnected = false;
-                this.userName = '';
-                this.roomName = '';
-                this.selectedOption = '';
-                this.reconnectAttempts = 0;
-                this.maxReconnectAttempts = 5;
-                
-                this.init();
-            }
+        // Variáveis globais
+        let selectedOption = '';
+        let ws = null;
+        let isConnected = false;
+        let userName = '';
+        let roomName = '';
 
-            init() {
-                this.loadSavedData();
-                this.setupEventListeners();
-                this.detectInitialOption();
-            }
+        // FUNÇÕES SIMPLES (com onclick direto)
+        function selectCloudflare() {
+            console.log('🚀 Selecionado Cloudflare');
+            selectedOption = 'cloudflare';
+            
+            // Limpa seleções anteriores
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Marca esta opção
+            document.getElementById('cloudflareBtn').classList.add('active');
+            
+            // Mostra/oculta campos
+            hideAllInputs();
+            document.getElementById('cloudflareInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+        }
 
-            detectInitialOption() {
-                // Detecta se já tem alguma config salva
-                const savedOption = localStorage.getItem('selectedOption');
-                if (savedOption) {
-                    this.selectOption(savedOption);
-                }
-            }
+        function selectLocaltunnel() {
+            console.log('⚡ Selecionado Localtunnel');
+            selectedOption = 'localtunnel';
+            
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.getElementById('localtunnelBtn').classList.add('active');
+            hideAllInputs();
+            document.getElementById('localtunnelInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+        }
 
-            loadSavedData() {
-                const savedName = localStorage.getItem('userName');
-                const savedRoom = localStorage.getItem('roomName');
-                
-                if (savedName) document.getElementById('userName').value = savedName;
-                if (savedRoom) document.getElementById('roomName').value = savedRoom;
-            }
+        function selectPinggy() {
+            console.log('🎯 Selecionado Pinggy');
+            selectedOption = 'pinggy';
+            
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.getElementById('pinggyBtn').classList.add('active');
+            hideAllInputs();
+            document.getElementById('pinggyInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+        }
 
-            setupEventListeners() {
-                const messageInput = document.getElementById('messageInput');
-                messageInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage();
-                });
-                
-                // Auto-deteção de URL
-                ['cloudflareUrl', 'localtunnelUrl', 'pinggyUrl'].forEach(id => {
-                    const input = document.getElementById(id);
-                    if (input) {
-                        input.addEventListener('input', (e) => {
-                            this.suggestUrlCorrection(e.target.id, e.target.value);
-                        });
+        function hideAllInputs() {
+            document.getElementById('cloudflareInput').style.display = 'none';
+            document.getElementById('localtunnelInput').style.display = 'none';
+            document.getElementById('pinggyInput').style.display = 'none';
+        }
+
+        function handleConnection() {
+            console.log('🔌 Iniciando conexão...');
+            
+            if (!selectedOption) {
+                alert('❌ Por favor, selecione uma opção primeiro!');
+                return;
+            }
+            
+            const urlField = selectedOption + 'Url';
+            const url = document.getElementById(urlField).value.trim();
+            
+            if (!url) {
+                alert('❌ Por favor, insira a URL!');
+                return;
+            }
+            
+            userName = document.getElementById('userName').value.trim() || 'Usuário';
+            roomName = document.getElementById('roomName').value.trim() || 'sala1';
+            
+            console.log('📝 Dados:', { option: selectedOption, url: url, userName: userName, roomName: roomName });
+            
+            // Processa e conecta
+            const processedUrl = processUrl(url);
+            connectToServer(processedUrl);
+        }
+
+        function processUrl(url) {
+            let processedUrl = url.trim();
+            
+            console.log('🔗 Processando URL:', processedUrl);
+            
+            // Converte baseado no serviço
+            switch(selectedOption) {
+                case 'cloudflare':
+                case 'localtunnel':
+                    // Converte HTTPS para WSS
+                    processedUrl = processedUrl.replace('https://', 'wss://');
+                    if (!processedUrl.startsWith('wss://')) {
+                        processedUrl = 'wss://' + processedUrl;
                     }
-                });
-            }
-
-            suggestUrlCorrection(fieldId, value) {
-                if (!value) return;
-                
-                let corrected = value;
-                
-                // Correções específicas por serviço
-                switch(fieldId) {
-                    case 'cloudflareUrl':
-                        if (!value.startsWith('http')) {
-                            corrected = 'https://' + value;
-                        }
-                        break;
-                    case 'localtunnelUrl':
-                        if (!value.startsWith('http')) {
-                            corrected = 'https://' + value.replace('.local', '.loca.lt');
-                        }
-                        break;
-                    case 'pinggyUrl':
-                        if (value.includes('tcp.t pinggy.io')) {
-                            corrected = value.replace('tcp.t pinggy.io', 'tcp.pinggy.io');
-                        }
-                        break;
-                }
-                
-                if (corrected !== value) {
-                    document.getElementById(fieldId).value = corrected;
-                }
-            }
-
-            selectOption(option) {
-                this.selectedOption = option;
-                
-                // Remove seleção anterior
-                document.querySelectorAll('.option-card').forEach(card => {
-                    card.classList.remove('active');
-                });
-                
-                // Marca seleção atual
-                document.getElementById(option + 'Card').classList.add('active');
-                
-                // Mostra campo apropriado
-                ['cloudflareSetup', 'localtunnelSetup', 'pinggySetup'].forEach(id => {
-                    document.getElementById(id).style.display = 'none';
-                });
-                
-                document.getElementById(option + 'Setup').style.display = 'block';
-                document.getElementById('connectBtn').disabled = false;
-                
-                localStorage.setItem('selectedOption', option);
-            }
-
-            handleConnection() {
-                if (!this.selectedOption) {
-                    this.updateStatus('Por favor, selecione uma opção', 'disconnected');
-                    return;
-                }
-                
-                const urlField = this.selectedOption + 'Url';
-                const url = document.getElementById(urlField).value.trim();
-                
-                if (!url) {
-                    this.updateStatus('Por favor, insira a URL', 'disconnected');
-                    return;
-                }
-                
-                this.userName = document.getElementById('userName').value.trim() || 'Usuário';
-                this.roomName = document.getElementById('roomName').value.trim() || 'sala1';
-                
-                // Salva dados
-                localStorage.setItem('userName', this.userName);
-                localStorage.setItem('roomName', this.roomName);
-                
-                // Processa URL baseado no serviço
-                const processedUrl = this.processServiceUrl(url);
-                this.connect(processedUrl);
-            }
-
-            processServiceUrl(url) {
-                let processedUrl = url.trim();
-                
-                switch(this.selectedOption) {
-                    case 'cloudflare':
-                        // Cloudflare já vem com HTTPS
-                        if (!processedUrl.startsWith('http')) {
-                            processedUrl = 'https://' + processedUrl;
-                        }
-                        // Converte para WebSocket
-                        processedUrl = processedUrl.replace('https://', 'wss://');
-                        break;
-                        
-                    case 'localtunnel':
-                        // Localtunnel já vem com HTTPS
-                        if (!processedUrl.startsWith('http')) {
-                            processedUrl = 'https://' + processedUrl;
-                        }
-                        // Converte para WebSocket
-                        processedUrl = processedUrl.replace('https://', 'wss://');
-                        break;
-                        
-                    case 'pinggy':
-                        // Pinggy TCP precisa ser convertido
-                        if (processedUrl.includes('tcp.pinggy.io')) {
-                            // Extrai porta da URL
-                            const portMatch = processedUrl.match(/:(\d+)/);
-                            const port = portMatch ? portMatch[1] : '443';
-                            processedUrl = `wss://tcp.pinggy.io:${port}`;
-                        } else {
-                            // Se já vem com formato certo
-                            processedUrl = processedUrl.replace('tcp://', 'wss://');
-                            if (!processedUrl.startsWith('ws')) {
-                                processedUrl = 'wss://' + processedUrl;
-                            }
-                        }
-                        break;
-                }
-                
-                console.log('🔗 URL processada:', processedUrl);
-                return processedUrl;
-            }
-
-            connect(url) {
-                console.log('🔄 Conectando a:', url);
-                this.updateStatus('Conectando...', 'connecting');
-                document.getElementById('connectBtn').disabled = true;
-                
-                try {
-                    this.ws = new WebSocket(url);
+                    break;
                     
-                    this.ws.onopen = () => {
-                        console.log('✅ Conectado com sucesso!');
-                        this.isConnected = true;
-                        this.reconnectAttempts = 0;
-                        this.updateStatus('Conectado', 'connected');
-                        this.showChat();
-                        this.joinRoom();
-                    };
-                    
-                    this.ws.onmessage = (event) => {
-                        const message = JSON.parse(event.data);
-                        this.handleMessage(message);
-                    };
-                    
-                    this.ws.onclose = () => {
-                        console.log('🔌 Conexão fechada');
-                        this.handleDisconnection();
-                    };
-                    
-                    this.ws.onerror = (error) => {
-                        console.error('❌ Erro WebSocket:', error);
-                        this.handleConnectionError(error);
-                    };
-                    
-                } catch (error) {
-                    console.error('❌ Erro ao criar WebSocket:', error);
-                    this.handleConnectionError(error);
-                }
+                case 'pinggy':
+                    // Converte TCP para WSS
+                    processedUrl = processedUrl.replace('tcp://', 'wss://');
+                    if (!processedUrl.startsWith('ws')) {
+                        processedUrl = 'wss://' + processedUrl;
+                    }
+                    break;
             }
+            
+            console.log('🔗 URL final:', processedUrl);
+            return processedUrl;
+        }
 
-            joinRoom() {
-                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.send(JSON.stringify({
+        function connectToServer(url) {
+            console.log('🔄 Conectando a:', url);
+            updateStatus('Conectando...', 'connecting');
+            document.getElementById('connectBtn').disabled = true;
+            
+            try {
+                ws = new WebSocket(url);
+                
+                ws.onopen = function() {
+                    console.log('✅ Conectado com sucesso!');
+                    isConnected = true;
+                    updateStatus('Conectado', 'connected');
+                    showChat();
+                    
+                    // Entrar na sala
+                    ws.send(JSON.stringify({
                         type: 'join',
-                        room: this.roomName,
-                        userName: this.userName
+                        room: roomName,
+                        userName: userName
                     }));
                     
-                    this.addMessage(`🎉 Você entrou na sala "${this.roomName}"`, 'sistema');
-                }
-            }
-
-            sendMessage() {
-                if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                    this.updateStatus('Não conectado', 'disconnected');
-                    return;
-                }
-                
-                const input = document.getElementById('messageInput');
-                const text = input.value.trim();
-                
-                if (!text) return;
-                
-                const message = {
-                    type: 'message',
-                    text: text,
-                    room: this.roomName,
-                    userName: this.userName,
-                    timestamp: new Date().toISOString()
+                    addMessage(`🎉 Você entrou na sala "${roomName}"`, 'sistema');
                 };
                 
-                this.ws.send(JSON.stringify(message));
-                input.value = '';
-            }
-
-            handleMessage(message) {
-                if (message.type === 'message') {
-                    const sender = message.userName === this.userName ? 'Você' : (message.userName || 'Anônimo');
-                    const messageType = message.userName === this.userName ? 'sent' : 'received';
-                    this.addMessage(`${sender}: ${message.text}`, messageType);
-                }
-            }
-
-            addMessage(text, type) {
-                const messagesList = document.getElementById('messagesList');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${type}`;
+                ws.onmessage = function(event) {
+                    console.log('📨 Mensagem recebida:', event.data);
+                    const msg = JSON.parse(event.data);
+                    
+                    if (msg.type === 'message') {
+                        const sender = msg.userName === userName ? 'Você' : (msg.userName || 'Anônimo');
+                        const messageType = msg.userName === userName ? 'sent' : 'received';
+                        addMessage(`${sender}: ${msg.text}`, messageType);
+                    }
+                };
                 
-                const time = new Date().toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
+                ws.onclose = function() {
+                    console.log('🔌 Desconectado');
+                    isConnected = false;
+                    updateStatus('Desconectado', 'disconnected');
+                    document.getElementById('connectBtn').disabled = false;
+                    addMessage('🔌 Conexão perdida. Verifique o serviço e tente novamente.', 'sistema');
+                };
                 
-                messageDiv.innerHTML = `
-                    <div>${this.escapeHtml(text)}</div>
-                    <div class="message-time">${time}</div>
-                `;
+                ws.onerror = function(error) {
+                    console.error('❌ Erro:', error);
+                    updateStatus('Erro de conexão', 'disconnected');
+                    document.getElementById('connectBtn').disabled = false;
+                    alert('❌ Erro ao conectar!\n\nVerifique:\n1. O serviço está rodando?\n2. A URL está correta?\n3. Tente outro serviço da lista');
+                };
                 
-                messagesList.appendChild(messageDiv);
-                messagesList.scrollTop = messagesList.scrollHeight;
-            }
-
-            showChat() {
-                document.getElementById('setupArea').style.display = 'none';
-                document.getElementById('chatArea').style.display = 'block';
-                document.getElementById('messageInput').disabled = false;
-                document.getElementById('sendBtn').disabled = false;
-            }
-
-            handleDisconnection() {
-                this.isConnected = false;
-                this.updateStatus('Desconectado', 'disconnected');
+            } catch (error) {
+                console.error('❌ Erro ao conectar:', error);
+                updateStatus('Erro ao conectar', 'disconnected');
                 document.getElementById('connectBtn').disabled = false;
-                this.addMessage('🔌 Conexão perdida. Verifique o serviço e tente novamente.', 'sistema');
-            }
-
-            handleConnectionError(error) {
-                console.error('❌ Erro de conexão:', error);
-                this.updateStatus('Erro ao conectar', 'disconnected');
-                document.getElementById('connectBtn').disabled = false;
-                
-                let errorMsg = 'Erro ao conectar';
-                if (error.message) errorMsg += ': ' + error.message;
-                
-                alert(`❌ ${errorMsg}\n\nVerifique:\n1. O serviço está rodando?\n2. A URL está correta?\n3. Tente outro serviço da lista`);
-            }
-
-            updateStatus(text, type) {
-                const status = document.getElementById('status');
-                status.textContent = text;
-                status.className = `status ${type}`;
-                status.style.display = 'block';
-            }
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-
-            pasteFromClipboard() {
-                const activeInput = document.querySelector('.input-group[style*="block"] input');
-                if (activeInput) {
-                    navigator.clipboard.readText().then(text => {
-                        activeInput.value = text;
-                        this.suggestUrlCorrection(activeInput.id, text);
-                    }).catch(() => {
-                        alert('❌ Não foi possível acessar a área de transferência');
-                    });
-                }
+                alert('❌ Erro: ' + error.message);
             }
         }
 
-        // Inicializar
+        function sendMessage() {
+            if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
+                alert('❌ Não conectado!');
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const message = {
+                type: 'message',
+                text: text,
+                room: roomName,
+                userName: userName,
+                timestamp: new Date().toISOString()
+            };
+            
+            ws.send(JSON.stringify(message));
+            input.value = '';
+        }
+
+        function addMessage(text, type) {
+            const messagesList = document.getElementById('messagesList');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            messagesList.appendChild(messageDiv);
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        function showChat() {
+            document.getElementById('setupArea').style.display = 'none';
+            document.getElementById('chatArea').style.display = 'block';
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+        }
+
+        function updateStatus(text, type) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Cloudflare Chat com múltiplas alternativas gratuitas');
-            new CloudflareChat();
+            console.log('🚀 Chat alternativas - Botões funcionando!');
+            console.log('📍 Funções disponíveis: selectCloudflare(), selectLocaltunnel(), selectPinggy(), handleConnection()');
+            
+            // Esconde todos os inputs no início
+            hideAllInputs();
         });
     </script>
 </body>
