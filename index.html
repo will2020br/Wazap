@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Alternativas - Sem Instalar</title>
+    <title>Chat Pinggy - Formatos Reais</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         
         .container { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 500px; width: 100%; overflow: hidden; }
         
@@ -90,26 +90,26 @@
     <div class="container">
         <div class="header">
             <h1>💬 Chat Alternativas Grátis</h1>
-            <p>Sem instalar nada - Use npx ou SSH</p>
+            <p>TLS automático sem instalar nada</p>
         </div>
         
         <div id="setupArea" class="setup-area">
             <h3 style="margin-bottom: 20px; color: #495057;">Escolha uma opção GRÁTIS:</h3>
             
             <!-- Botões com funções onclick diretas -->
-            <button class="option-card" onclick="selectOption('localtunnel')" id="localtunnelBtn">
+            <button class="option-card" onclick="selectLocaltunnel()" id="localtunnelBtn">
                 <div class="option-title">⚡ Localtunnel (MAIS FÁCIL)</div>
                 <div class="option-description">Só digitar: npx localtunnel --port 8080</div>
                 <div class="option-price">✅ SEM INSTALAR NADA</div>
             </button>
             
-            <button class="option-card" onclick="selectOption('pinggy')" id="pinggyBtn">
+            <button class="option-card" onclick="selectPinggy()" id="pinggyBtn">
                 <div class="option-title">🎯 Pinggy (Com TLS)</div>
                 <div class="option-description">SSH que já existe: ssh -R0:localhost:8080 a.pinggy.io</div>
                 <div class="option-price">✅ SEM INSTALAR NADA</div>
             </button>
             
-            <button class="option-card" onclick="selectOption('serveo')" id="serveoBtn">
+            <button class="option-card" onclick="selectServeo()" id="serveoBtn">
                 <div class="option-title">🚀 Serveo (Mais rápido)</div>
                 <div class="option-description">SSH simples: ssh -R 80:localhost:8080 serveo.net</div>
                 <div class="option-price">✅ SEM INSTALAR NADA</div>
@@ -124,13 +124,14 @@
             
             <div id="pinggyInput" class="input-group" style="display: none;">
                 <label>URL do Pinggy:</label>
-                <input type="text" id="pinggyUrl" placeholder="wss://tcp.pinggy.io:12345">
+                <input type="url" id="pinggyUrl" placeholder="https://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link">
                 <div class="help-text">Execute: <code>ssh -p 443 -R0:localhost:8080 a.pinggy.io</code></div>
+                <div class="help-text" style="color: #d63031;">📍 Cole exatamente o link que aparecer (começa com http://)</div>
             </div>
             
             <div id="serveoInput" class="input-group" style="display: none;">
                 <label>URL do Serveo:</label>
-                <input type="text" id="serveoUrl" placeholder="wss://serveo.net:80">
+                <input type="text" id="serveoUrl" placeholder="https://serveo.net">
                 <div class="help-text">Execute: <code>ssh -R 80:localhost:8080 serveo.net</code></div>
             </div>
             
@@ -173,28 +174,46 @@
         let roomName = '';
 
         // FUNÇÕES SIMPLES E DIRETAS
-        function selectOption(option) {
-            console.log('🎯 Selecionado:', option);
-            selectedOption = option;
+        function selectLocaltunnel() {
+            console.log('⚡ Selecionado Localtunnel');
+            selectedOption = 'localtunnel';
             
-            // Limpa seleções anteriores
             document.querySelectorAll('.option-card').forEach(card => {
                 card.classList.remove('active');
             });
             
-            // Marca esta opção
-            document.getElementById(option + 'Btn').classList.add('active');
-            
-            // Esconde todos os inputs
+            document.getElementById('localtunnelBtn').classList.add('active');
             hideAllInputs();
-            
-            // Mostra input da opção selecionada
-            document.getElementById(option + 'Input').style.display = 'block';
-            
-            // Habilita botão conectar
+            document.getElementById('localtunnelInput').style.display = 'block';
             document.getElementById('connectBtn').disabled = false;
+        }
+
+        function selectPinggy() {
+            console.log('🎯 Selecionado Pinggy');
+            selectedOption = 'pinggy';
             
-            console.log('✅ Opção selecionada:', option);
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.getElementById('pinggyBtn').classList.add('active');
+            hideAllInputs();
+            document.getElementById('pinggyInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+        }
+
+        function selectServeo() {
+            console.log('🚀 Selecionado Serveo');
+            selectedOption = 'serveo';
+            
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.getElementById('serveoBtn').classList.add('active');
+            hideAllInputs();
+            document.getElementById('serveoInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
         }
 
         function hideAllInputs() {
@@ -233,12 +252,12 @@
             let processedUrl = url.trim();
             
             console.log('🔗 Processando URL:', processedUrl);
+            console.log('📍 Tipo de conexão:', selectedOption);
             
-            // Converte baseado no serviço
+            // Detecta e converte baseado no formato
             switch(selectedOption) {
                 case 'localtunnel':
-                case 'serveo':
-                    // Converte HTTPS para WSS
+                    // Localtunnel: https:// → wss://
                     processedUrl = processedUrl.replace('https://', 'wss://');
                     if (!processedUrl.startsWith('wss://')) {
                         processedUrl = 'wss://' + processedUrl;
@@ -246,9 +265,26 @@
                     break;
                     
                 case 'pinggy':
-                    // Converte TCP para WSS
-                    processedUrl = processedUrl.replace('tcp://', 'wss://');
-                    if (!processedUrl.startsWith('ws')) {
+                    // Pinggy pode vir em vários formatos
+                    if (processedUrl.includes('tcp.pinggy.io')) {
+                        // Formato: tcp://tcp.pinggy.io:12345
+                        processedUrl = processedUrl.replace('tcp://', 'wss://');
+                    } else if (processedUrl.startsWith('http://')) {
+                        // Formato: http://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link
+                        processedUrl = processedUrl.replace('http://', 'wss://');
+                    } else if (processedUrl.startsWith('https://')) {
+                        // Formato: https://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link
+                        processedUrl = processedUrl.replace('https://', 'wss://');
+                    } else {
+                        // Sem protocolo - adiciona WSS
+                        processedUrl = 'wss://' + processedUrl;
+                    }
+                    break;
+                    
+                case 'serveo':
+                    // Serveo: https:// → wss://
+                    processedUrl = processedUrl.replace('https://', 'wss://');
+                    if (!processedUrl.startsWith('wss://')) {
                         processedUrl = 'wss://' + processedUrl;
                     }
                     break;
@@ -375,7 +411,7 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Chat alternativas - Botões funcionando 100%!');
-            console.log('📍 Funções disponíveis: selectOption(), handleConnection(), connectToServer(), sendMessage()');
+            console.log('📍 Funções disponíveis: selectLocaltunnel(), selectPinggy(), selectServeo(), handleConnection(), connectToServer(), sendMessage()');
             
             // Esconde todos os inputs no início
             hideAllInputs();
