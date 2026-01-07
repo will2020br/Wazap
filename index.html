@@ -3,229 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Simples - ngrok</title>
+    <title>Chat ngrok - HTTPS/WSS</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 500px; width: 100%; overflow: hidden; }
         
-        .header { background: #25D366; color: white; padding: 20px; text-align: center; }
+        .header { background: linear-gradient(135deg, #25D366, #128C7E); color: white; padding: 25px; text-align: center; }
         
-        .connection-box { padding: 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; }
+        .header h1 { font-size: 24px; margin-bottom: 8px; }
         
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 14px; }
         
-        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .connection-area { padding: 25px; background: #f8f9fa; }
         
-        button { background: #25D366; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .input-group { margin-bottom: 15px; }
         
-        button:hover { background: #128C7E; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #495057; font-size: 14px; }
         
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        .input-group input { width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
         
-        .status { padding: 10px; text-align: center; font-size: 12px; }
+        .input-group input:focus { outline: none; border-color: #25D366; }
         
-        .status.connected { background: #d4edda; color: #155724; }
+        .protocol-warning { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 13px; color: #856404; }
         
-        .status.disconnected { background: #f8d7da; color: #721c24; }
+        .protocol-warning strong { color: #d63031; }
         
-        .chat-box { height: 400px; overflow-y: auto; padding: 20px; background: #e5ddd5; }
+        .btn-primary { background: #25D366; color: white; border: none; padding: 12px 24px; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; font-size: 16px; }
         
-        .message { margin-bottom: 15px; max-width: 70%; padding: 10px 15px; border-radius: 18px; word-wrap: break-word; }
+        .btn-primary:hover { background: #128C7E; transform: translateY(-2px); }
+        
+        .btn-primary:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        
+        .status { padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 500; margin: 15px 0; }
+        
+        .status.connected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        
+        .status.connecting { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
+        
+        .status.disconnected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .chat-area { display: none; height: 60vh; max-height: 500px; }
+        
+        .chat-messages { height: calc(100% - 80px); overflow-y: auto; padding: 20px; background: #e5ddd5; background-image: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="%23e5ddd5" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="%23e5ddd5"/><rect width="100" height="100" fill="url(%23grid)"/></svg>'); }
+        
+        .message { max-width: 70%; padding: 10px 15px; border-radius: 18px; margin-bottom: 12px; word-wrap: break-word; }
         
         .message.sent { background: #dcf8c6; margin-left: auto; border-bottom-right-radius: 4px; }
         
-        .message.received { background: white; margin-right: auto; border-bottom-left-radius: 4px; }
+        .message.received { background: white; margin-right: auto; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         
-        .message-time { font-size: 10px; color: #666; text-align: right; margin-top: 5px; }
+        .message-time { font-size: 10px; color: #6c757d; text-align: right; margin-top: 4px; }
         
-        .input-box { display: flex; gap: 10px; padding: 15px; background: #f8f9fa; border-top: 1px solid #ddd; }
+        .chat-input { display: flex; gap: 10px; padding: 15px; background: #f8f9fa; border-top: 1px solid #dee2e6; }
         
-        .input-box input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; }
+        .chat-input input { flex: 1; padding: 12px 16px; border: 2px solid #e9ecef; border-radius: 25px; font-size: 14px; }
         
-        .simple-instructions { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; font-size: 13px; }
+        .chat-input button { background: #25D366; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
         
-        .simple-instructions ol { margin-left: 20px; }
+        .chat-input button:hover { background: #128C7E; transform: scale(1.05); }
         
-        .copy-btn { background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 10px; }
+        .chat-input button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        
+        .copy-btn { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
+        
+        .copy-btn:hover { background: #138496; }
+        
+        .help-text { font-size: 12px; color: #6c757d; margin-top: 5px; }
+        
+        .code-example { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; word-break: break-all; margin: 5px 0; }
+        
+        @media (max-width: 576px) {
+            .container { margin: 10px; border-radius: 10px; }
+            .header { padding: 20px; }
+            .connection-area, .chat-messages { padding: 15px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>💬 Chat Simples com ngrok</h2>
-            <p>Só colar a URL e conectar!</p>
+            <h1>💬 Chat ngrok</h1>
+            <p>Conexão segura com detecção automática de protocolo</p>
         </div>
         
-        <div class="connection-box">
-            <div class="simple-instructions">
-                <strong>📋 Como usar:</strong>
-                <ol>
-                    <li>Execute: <code>ngrok tcp 8080</code> no terminal</li>
-                    <li>Copie a URL (ex: <code>tcp://0.tcp.ngrok.io:12345</code>)</li>
-                    <li>Cole abaixo e clique em Conectar</li>
-                </ol>
+        <div id="connectionArea" class="connection-area">
+            <div class="input-group">
+                <label>URL do ngrok:</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="text" id="ngrokUrl" placeholder="Cole aqui: tcp://0.tcp.ngrok.io:12345">
+                    <button class="copy-btn" onclick="pasteFromClipboard()">📋 Colar</button>
+                </div>
+                <div class="help-text">Copie a URL do terminal do ngrok</div>
             </div>
             
             <div class="input-group">
-                <input type="text" id="ngrokUrl" placeholder="Cole aqui: tcp://0.tcp.ngrok.io:12345">
-                <button id="connectBtn" onclick="connectToNgrok()">Conectar</button>
-            </div>
-            
-            <div class="input-group">
+                <label>Seu nome:</label>
                 <input type="text" id="userName" placeholder="Seu nome" value="Usuário">
-                <input type="text" id="roomName" placeholder="Nome da sala" value="sala1">
             </div>
+            
+            <div class="input-group">
+                <label>Sala (compartilhe este nome):</label>
+                <input type="text" id="roomName" placeholder="nome-da-sala" value="sala1">
+            </div>
+            
+            <div id="protocolWarning" class="protocol-warning" style="display: none;">
+                <strong>⚠️ Detectado HTTPS:</strong> O sistema usará <strong>WSS</strong> automaticamente
+            </div>
+            
+            <button id="connectBtn" class="btn-primary" onclick="handleConnection()">
+                <span id="connectBtnText">Conectar</span>
+            </button>
             
             <div id="status" class="status" style="display: none;"></div>
         </div>
         
-        <div id="chatArea" style="display: none;">
-            <div class="chat-box" id="messagesList"></div>
-            <div class="input-box">
+        <div id="chatArea" class="chat-area">
+            <div class="chat-messages" id="messagesList"></div>
+            <div class="chat-input">
                 <input type="text" id="messageInput" placeholder="Digite uma mensagem..." disabled>
-                <button id="sendBtn" onclick="sendMessage()" disabled>Enviar</button>
+                <button id="sendBtn" onclick="sendMessage()" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        let ws = null;
-        let isConnected = false;
-        let userName = '';
-        let roomName = '';
-
-        function connectToNgrok() {
-            const ngrokUrl = document.getElementById('ngrokUrl').value.trim();
-            userName = document.getElementById('userName').value.trim() || 'Usuário';
-            roomName = document.getElementById('roomName').value.trim() || 'sala1';
-            
-            if (!ngrokUrl) {
-                alert('❌ Cole a URL do ngrok!');
-                return;
-            }
-            
-            // Converte tcp:// para ws://
-            let wsUrl = ngrokUrl.replace('tcp://', 'ws://');
-            
-            console.log('🔄 Conectando a:', wsUrl);
-            updateStatus('Conectando...', 'disconnected');
-            
-            try {
-                ws = new WebSocket(wsUrl);
+        class NgrokChat {
+            constructor() {
+                this.ws = null;
+                this.isConnected = false;
+                this.userName = '';
+                this.roomName = '';
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
                 
-                ws.onopen = function() {
-                    console.log('✅ Conectado!');
-                    isConnected = true;
-                    updateStatus('Conectado', 'connected');
-                    document.getElementById('chatArea').style.display = 'block';
-                    document.getElementById('messageInput').disabled = false;
-                    document.getElementById('sendBtn').disabled = false;
+                this.init();
+            }
+
+            init() {
+                this.detectProtocol();
+                this.loadSavedData();
+                this.setupEventListeners();
+            }
+
+            detectProtocol() {
+                const isHttps = window.location.protocol === 'https:';
+                if (isHttps) {
+                    document.getElementById('protocolWarning').style.display = 'block';
+                    console.log('🔒 HTTPS detectado - usando WSS');
+                } else {
+                    console.log('🔓 HTTP detectado - usando WS');
+                }
+            }
+
+            loadSavedData() {
+                const savedUrl = localStorage.getItem('ngrokUrl');
+                const savedName = localStorage.getItem('userName');
+                const savedRoom = localStorage.getItem('roomName');
+                
+                if (savedUrl) document.getElementById('ngrokUrl').value = savedUrl;
+                if (savedName) document.getElementById('userName').value = savedName;
+                if (savedRoom) document.getElementById('roomName').value = savedRoom;
+            }
+
+            setupEventListeners() {
+                const connectBtn = document.getElementById('connectBtn');
+                const messageInput = document.getElementById('messageInput');
+                
+                connectBtn.addEventListener('click', () => this.handleConnection());
+                messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                
+                // Auto-deteção de protocolo ao digitar
+                document.getElementById('ngrokUrl').addEventListener('input', (e) => {
+                    this.suggestProtocol(e.target.value);
+                });
+            }
+
+            suggestProtocol(url) {
+                if (!url) return;
+                
+                const isHttps = window.location.protocol === 'https:';
+                const hasProtocol = url.startsWith('ws://') || url.startsWith('wss://') || url.startsWith('tcp://');
+                
+                if (!hasProtocol && isHttps) {
+                    // Sugere WSS para HTTPS
+                    document.getElementById('ngrokUrl').value = 'wss://' + url;
+                } else if (!hasProtocol) {
+                    // Sugere WS para HTTP
+                    document.getElementById('ngrokUrl').value = 'ws://' + url;
+                } else if (url.startsWith('tcp://')) {
+                    // Converte tcp:// automaticamente
+                    document.getElementById('ngrokUrl').value = url.replace('tcp://', isHttps ? 'wss://' : 'ws://');
+                }
+            }
+
+            handleConnection() {
+                const ngrokUrl = document.getElementById('ngrokUrl').value.trim();
+                this.userName = document.getElementById('userName').value.trim() || 'Usuário';
+                this.roomName = document.getElementById('roomName').value.trim() || 'sala1';
+                
+                if (!ngrokUrl) {
+                    this.updateStatus('Por favor, insira a URL do ngrok', 'disconnected');
+                    return;
+                }
+                
+                // Salva para próxima vez
+                localStorage.setItem('ngrokUrl', ngrokUrl);
+                localStorage.setItem('userName', this.userName);
+                localStorage.setItem('roomName', this.roomName);
+                
+                // Processa a URL
+                const wsUrl = this.processUrl(ngrokUrl);
+                this.connect(wsUrl);
+            }
+
+            processUrl(url) {
+                let processedUrl = url.trim();
+                
+                // Remove espaços e converte tcp://
+                processedUrl = processedUrl.replace('tcp://', window.location.protocol === 'https:' ? 'wss://' : 'ws://');
+                
+                // Adiciona protocolo se não tiver
+                if (!processedUrl.startsWith('ws://') && !processedUrl.startsWith('wss://')) {
+                    processedUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + processedUrl;
+                }
+                
+                console.log('🔗 URL processada:', processedUrl);
+                return processedUrl;
+            }
+
+            connect(url) {
+                console.log('🔄 Conectando a:', url);
+                this.updateStatus('Conectando...', 'connecting');
+                document.getElementById('connectBtn').disabled = true;
+                
+                try {
+                    this.ws = new WebSocket(url);
                     
-                    // Entrar na sala
-                    ws.send(JSON.stringify({
+                    this.ws.onopen = () => {
+                        console.log('✅ Conectado com sucesso!');
+                        this.isConnected = true;
+                        this.reconnectAttempts = 0;
+                        this.updateStatus('Conectado', 'connected');
+                        this.showChat();
+                        
+                        // Entrar na sala
+                        this.joinRoom();
+                    };
+                    
+                    this.ws.onmessage = (event) => {
+                        const message = JSON.parse(event.data);
+                        this.handleMessage(message);
+                    };
+                    
+                    this.ws.onclose = () => {
+                        console.log('🔌 Conexão fechada');
+                        this.handleDisconnection();
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        console.error('❌ Erro WebSocket:', error);
+                        this.handleConnectionError(error);
+                    };
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao criar WebSocket:', error);
+                    this.handleConnectionError(error);
+                }
+            }
+
+            joinRoom() {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({
                         type: 'join',
-                        room: roomName,
-                        userName: userName
+                        room: this.roomName,
+                        userName: this.userName
                     }));
                     
-                    addMessage(`🎉 Você entrou na sala ${roomName}`, 'sistema');
+                    this.addMessage(`🎉 Você entrou na sala "${this.roomName}"`, 'sistema');
+                }
+            }
+
+            handleMessage(message) {
+                if (message.type === 'message') {
+                    const sender = message.userName === this.userName ? 'Você' : (message.userName || 'Anônimo');
+                    const messageType = message.userName === this.userName ? 'sent' : 'received';
+                    this.addMessage(`${sender}: ${message.text}`, messageType);
+                }
+            }
+
+            sendMessage() {
+                if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                    this.updateStatus('Não conectado', 'disconnected');
+                    return;
+                }
+                
+                const input = document.getElementById('messageInput');
+                const text = input.value.trim();
+                
+                if (!text) return;
+                
+                const message = {
+                    type: 'message',
+                    text: text,
+                    room: this.roomName,
+                    userName: this.userName,
+                    timestamp: new Date().toISOString()
                 };
                 
-                ws.onmessage = function(event) {
-                    console.log('📨 Mensagem:', event.data);
-                    const msg = JSON.parse(event.data);
-                    
-                    if (msg.type === 'message') {
-                        const sender = msg.userName === userName ? 'Você' : msg.userName;
-                        addMessage(`${sender}: ${msg.text}`, msg.userName === userName ? 'sent' : 'received');
-                    }
-                };
+                this.ws.send(JSON.stringify(message));
+                input.value = '';
+            }
+
+            addMessage(text, type) {
+                const messagesList = document.getElementById('messagesList');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
                 
-                ws.onclose = function() {
-                    console.log('🔌 Desconectado');
-                    isConnected = false;
-                    updateStatus('Desconectado', 'disconnected');
-                    document.getElementById('chatArea').style.display = 'none';
-                    document.getElementById('messageInput').disabled = true;
-                    document.getElementById('sendBtn').disabled = true;
-                };
+                const time = new Date().toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
                 
-                ws.onerror = function(error) {
-                    console.error('❌ Erro:', error);
-                    updateStatus('Erro de conexão', 'disconnected');
-                    alert('❌ Erro ao conectar!\n\nVerifique:\n1. ngrok está rodando?\n2. A URL está correta?\n3. O servidor está ativo?');
-                };
+                messageDiv.innerHTML = `
+                    <div>${this.escapeHtml(text)}</div>
+                    <div class="message-time">${time}</div>
+                `;
                 
-            } catch (error) {
-                console.error('❌ Erro:', error);
-                updateStatus('Erro ao conectar', 'disconnected');
-                alert('❌ Erro: ' + error.message);
+                messagesList.appendChild(messageDiv);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+
+            showChat() {
+                document.getElementById('connectionArea').style.display = 'none';
+                document.getElementById('chatArea').style.display = 'block';
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
+
+            handleDisconnection() {
+                this.isConnected = false;
+                this.updateStatus('Desconectado', 'disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                
+                // Mantém a área de chat visível para mensagens de sistema
+                this.addMessage('🔌 Conexão perdida. Verifique ngrok e tente novamente.', 'sistema');
+            }
+
+            handleConnectionError(error) {
+                console.error('❌ Erro de conexão:', error);
+                this.updateStatus('Erro ao conectar', 'disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                
+                let errorMsg = 'Erro ao conectar';
+                if (error.message) errorMsg += ': ' + error.message;
+                
+                alert(`❌ ${errorMsg}\n\nVerifique:\n1. ngrok está rodando (ngrok tcp 8080)\n2. A URL está correta\n3. O servidor está ativo\n4. Tente usar wss:// para HTTPS`);
+            }
+
+            updateStatus(text, type) {
+                const status = document.getElementById('status');
+                status.textContent = text;
+                status.className = `status ${type}`;
+                status.style.display = 'block';
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            pasteFromClipboard() {
+                navigator.clipboard.readText().then(text => {
+                    document.getElementById('ngrokUrl').value = text;
+                    this.suggestProtocol(text);
+                }).catch(() => {
+                    alert('❌ Não foi possível acessar a área de transferência');
+                });
             }
         }
 
-        function sendMessage() {
-            if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
-                alert('❌ Não conectado!');
-                return;
-            }
-            
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            
-            if (!text) return;
-            
-            const message = {
-                type: 'message',
-                text: text,
-                room: roomName,
-                userName: userName,
-                timestamp: new Date().toISOString()
-            };
-            
-            ws.send(JSON.stringify(message));
-            input.value = '';
-        }
-
-        function addMessage(text, type) {
-            const messagesList = document.getElementById('messagesList');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            const time = new Date().toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            messageDiv.innerHTML = `
-                <div>${text}</div>
-                <div class="message-time">${time}</div>
-            `;
-            
-            messagesList.appendChild(messageDiv);
-            messagesList.scrollTop = messagesList.scrollHeight;
-        }
-
-        function updateStatus(text, type) {
-            const status = document.getElementById('status');
-            status.textContent = text;
-            status.className = `status ${type}`;
-            status.style.display = 'block';
-        }
-
-        // Permitir conectar com Enter
-        document.getElementById('ngrokUrl').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') connectToNgrok();
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Chat ngrok com detecção automática de protocolo');
+            new NgrokChat();
         });
-        
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        // Debug
-        console.log('🚀 Chat simples carregado!');
     </script>
 </body>
 </html>

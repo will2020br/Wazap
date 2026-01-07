@@ -1,2 +1,0 @@
-# Wazap
-chat private!
