@@ -3,15 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Clone - Criar Chat</title>
-    <link rel="stylesheet" href="./style.css">
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#25D366">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>WhatsApp Clone</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #25D366;
+            --primary-dark: #128C7E;
+            --background: #f0f2f5;
+            --chat-bg: #e5ddd5;
+            --message-sent: #dcf8c6;
+            --message-received: #ffffff;
+            --text-primary: #1b1b1b;
+            --text-secondary: #6b6b6b;
+        }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--background); }
+        
+        /* Tela Inicial */
+        .welcome-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 20px;
+        }
+        
+        .logo { margin-bottom: 20px; }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Tela do Chat */
+        .chat-screen {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--chat-bg);
+        }
+        
+        .chat-header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-image: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="%23e5ddd5" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="%23e5ddd5"/><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+        
+        .chat-input {
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+        
+        .message.sent {
+            background: var(--message-sent);
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.received {
+            background: var(--message-received);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            border: none;
+            background: var(--background);
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .btn-send, .btn-icon, .btn-attach {
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-send:hover { background: var(--primary-dark); transform: scale(1.05); }
+        .btn-icon { background: transparent; color: white; width: 40px; height: 40px; }
+        .btn-attach { background: transparent; color: #54656f; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        input[type="file"] { display: none; }
+        
+        @media (max-width: 768px) {
+            .message { max-width: 85%; }
+        }
+    </style>
 </head>
-<body class="index-page">
-    <div class="container">
+<body>
+    <!-- TELA INICIAL -->
+    <div id="welcomeScreen" class="welcome-screen">
         <div class="welcome-card">
             <div class="logo">
                 <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
@@ -20,7 +213,7 @@
             </div>
             <h1>WhatsApp Clone</h1>
             <p>Crie chats privados que funcionam no seu navegador</p>
-            <button id="createChat" class="btn-primary">
+            <button id="createChatBtn" class="btn-primary">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="white"/>
                 </svg>
@@ -29,6 +222,357 @@
         </div>
     </div>
 
-    <script src="./app.js"></script>
+    <!-- TELA DO CHAT -->
+    <div id="chatScreen" class="chat-screen">
+        <header class="chat-header">
+            <button id="backBtn" class="btn-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/>
+                </svg>
+            </button>
+            <div style="flex: 1;">
+                <h3>Chat Privado</h3>
+                <small>online</small>
+            </div>
+            <button id="exportBtn" class="btn-icon" title="Exportar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="white"/>
+                </svg>
+            </button>
+            <button id="deleteBtn" class="btn-icon" title="Apagar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
+                </svg>
+            </button>
+        </header>
+
+        <main class="chat-messages" id="messagesContainer">
+            <div id="messagesList"></div>
+        </main>
+
+        <footer class="chat-input">
+            <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+            <button id="attachBtn" class="btn-attach">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#54656f"/>
+                </svg>
+            </button>
+            <input type="text" id="messageInput" placeholder="Digite uma mensagem..." autocomplete="off">
+            <button id="sendBtn" class="btn-send">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/>
+                </svg>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirmar Ação</h3>
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn-secondary">Cancelar</button>
+                <button id="modalConfirm" class="btn-primary">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class WhatsAppClone {
+            constructor() {
+                this.currentChatId = null;
+                this.currentFile = null;
+                this.init();
+            }
+
+            init() {
+                console.log('🚀 Iniciando WhatsApp Clone');
+                
+                // Detectar estado inicial pela URL
+                const hash = window.location.hash;
+                if (hash) {
+                    this.currentChatId = hash.substring(1);
+                    this.showChatScreen();
+                } else {
+                    this.showWelcomeScreen();
+                }
+                
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Tela inicial
+                const createBtn = document.getElementById('createChatBtn');
+                if (createBtn) {
+                    createBtn.addEventListener('click', () => this.createNewChat());
+                }
+
+                // Chat
+                const sendBtn = document.getElementById('sendBtn');
+                const messageInput = document.getElementById('messageInput');
+                const attachBtn = document.getElementById('attachBtn');
+                const fileInput = document.getElementById('fileInput');
+                const backBtn = document.getElementById('backBtn');
+                const exportBtn = document.getElementById('exportBtn');
+                const deleteBtn = document.getElementById('deleteBtn');
+
+                if (sendBtn) sendBtn.addEventListener('click', () => this.sendMessage());
+                if (messageInput) {
+                    messageInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.sendMessage();
+                    });
+                }
+                if (attachBtn) attachBtn.addEventListener('click', () => fileInput.click());
+                if (fileInput) fileInput.addEventListener('change', (e) => this.handleFile(e));
+                if (backBtn) backBtn.addEventListener('click', () => this.goBack());
+                if (exportBtn) exportBtn.addEventListener('click', () => this.exportChat());
+                if (deleteBtn) deleteBtn.addEventListener('click', () => this.deleteChat());
+
+                // Modal
+                const modalCancel = document.getElementById('modalCancel');
+                if (modalCancel) {
+                    modalCancel.addEventListener('click', () => {
+                        document.getElementById('confirmModal').classList.remove('active');
+                    });
+                }
+            }
+
+            createNewChat() {
+                const chatId = 'chat_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+                console.log('📝 Criando chat:', chatId);
+                
+                window.location.hash = chatId;
+                this.currentChatId = chatId;
+                this.showChatScreen();
+            }
+
+            showWelcomeScreen() {
+                console.log('🏠 Mostrando tela inicial');
+                document.getElementById('welcomeScreen').style.display = 'flex';
+                document.getElementById('chatScreen').style.display = 'none';
+            }
+
+            showChatScreen() {
+                console.log('💬 Mostrando tela do chat');
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                
+                this.loadMessages();
+                
+                // Simular mensagem de boas-vindas
+                if (this.getMessages().length === 0) {
+                    setTimeout(() => {
+                        this.addMessage({
+                            id: Date.now(),
+                            text: 'Olá! Este é seu chat privado. Compartilhe a URL para conversar.',
+                            timestamp: new Date().toISOString(),
+                            type: 'text',
+                            sender: 'other'
+                        });
+                    }, 1000);
+                }
+            }
+
+            sendMessage() {
+                const input = document.getElementById('messageInput');
+                const text = input.value.trim();
+                
+                if (!text && !this.currentFile) return;
+                
+                const message = {
+                    id: Date.now(),
+                    text: text,
+                    timestamp: new Date().toISOString(),
+                    type: this.currentFile ? 'file' : 'text',
+                    fileData: this.currentFile,
+                    sender: 'user'
+                };
+                
+                this.addMessage(message);
+                input.value = '';
+                this.currentFile = null;
+                input.placeholder = 'Digite uma mensagem...';
+                
+                // Simular resposta
+                setTimeout(() => this.simulateReply(), 1500);
+            }
+
+            simulateReply() {
+                const replies = [
+                    "Entendi! 😊",
+                    "Que legal! Conte mais.",
+                    "Concordo com você!",
+                    "Hmm, interessante...",
+                    "Estou aqui para conversar!"
+                ];
+                
+                const reply = {
+                    id: Date.now(),
+                    text: replies[Math.floor(Math.random() * replies.length)],
+                    timestamp: new Date().toISOString(),
+                    type: 'text',
+                    sender: 'other'
+                };
+                
+                this.addMessage(reply);
+            }
+
+            addMessage(message) {
+                const messages = this.getMessages();
+                messages.push(message);
+                localStorage.setItem(`chat_${this.currentChatId}_messages`, JSON.stringify(messages));
+                this.renderMessage(message);
+                this.scrollToBottom();
+            }
+
+            getMessages() {
+                try {
+                    const stored = localStorage.getItem(`chat_${this.currentChatId}_messages`);
+                    return stored ? JSON.parse(stored) : [];
+                } catch {
+                    return [];
+                }
+            }
+
+            renderMessage(message) {
+                const messagesList = document.getElementById('messagesList');
+                if (!messagesList) return;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.sender}`;
+                
+                const time = new Date(message.timestamp);
+                const timeStr = time.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                let content = '';
+                
+                if (message.type === 'text') {
+                    content = `<div>${this.escapeHtml(message.text)}</div>`;
+                } else if (message.type === 'file' && message.fileData) {
+                    content = this.renderFile(message.fileData);
+                }
+                
+                messageDiv.innerHTML = `
+                    ${content}
+                    <div class="message-time">${timeStr}</div>
+                `;
+                
+                messagesList.appendChild(messageDiv);
+            }
+
+            renderFile(fileData) {
+                const { type, name, url } = fileData;
+                
+                if (type.startsWith('image/')) {
+                    return `<img src="${url}" alt="${name}" style="max-width: 200px; border-radius: 12px; cursor: pointer;" onclick="window.open('${url}', '_blank')">`;
+                } else if (type.startsWith('video/')) {
+                    return `<video controls style="max-width: 200px; border-radius: 12px;"><source src="${url}" type="${type}"></video>`;
+                } else if (type.startsWith('audio/')) {
+                    return `<audio controls style="width: 200px;"><source src="${url}" type="${type}"></audio>`;
+                } else {
+                    return `<a href="${url}" download="${name}" style="color: #128C7E; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.83V19h2v-4.17l1.59 1.59L16 15.01 12 11z" fill="#128C7E"/>
+                        </svg>
+                        ${name}
+                    </a>`;
+                }
+            }
+
+            loadMessages() {
+                const messages = this.getMessages();
+                const messagesList = document.getElementById('messagesList');
+                if (!messagesList) return;
+                
+                messagesList.innerHTML = '';
+                messages.forEach(message => this.renderMessage(message));
+                this.scrollToBottom();
+            }
+
+            handleFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.currentFile = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        url: e.target.result
+                    };
+                    
+                    const input = document.getElementById('messageInput');
+                    input.placeholder = `Anexo: ${file.name}`;
+                    input.style.fontStyle = 'italic';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            exportChat() {
+                const messages = this.getMessages();
+                const chatData = {
+                    chatId: this.currentChatId,
+                    exportDate: new Date().toISOString(),
+                    messages: messages
+                };
+                
+                const dataStr = JSON.stringify(chatData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `chat_${this.currentChatId}_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+            }
+
+            deleteChat() {
+                const modal = document.getElementById('confirmModal');
+                document.getElementById('modalMessage').textContent = 'Tem certeza que deseja apagar este chat?';
+                modal.classList.add('active');
+                
+                document.getElementById('modalConfirm').onclick = () => {
+                    localStorage.removeItem(`chat_${this.currentChatId}_messages`);
+                    modal.classList.remove('active');
+                    window.location.hash = '';
+                    this.showWelcomeScreen();
+                };
+            }
+
+            goBack() {
+                window.location.hash = '';
+                this.showWelcomeScreen();
+            }
+
+            scrollToBottom() {
+                const container = document.getElementById('messagesContainer');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 WhatsApp Clone carregado');
+            new WhatsAppClone();
+        });
+
+        // Detectar mudanças no hash (quando usuário navega)
+        window.addEventListener('hashchange', () => {
+            location.reload(); // Recarrega para mudar entre telas
+        });
+    </script>
 </body>
 </html>
