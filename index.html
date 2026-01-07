@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Clone</title>
+    <title>WhatsApp Clone Real</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -20,7 +20,6 @@
 
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--background); }
         
-        /* Tela Inicial */
         .welcome-screen {
             display: flex;
             align-items: center;
@@ -39,7 +38,29 @@
             margin: 20px;
         }
         
-        .logo { margin-bottom: 20px; }
+        .setup-form {
+            text-align: left;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
         
         .btn-primary {
             background: var(--primary);
@@ -63,8 +84,23 @@
             background: var(--primary-dark);
             transform: translateY(-2px);
         }
+        
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
 
-        /* Tela do Chat */
         .chat-screen {
             display: none;
             flex-direction: column;
@@ -153,28 +189,31 @@
         .btn-icon { background: transparent; color: white; width: 40px; height: 40px; }
         .btn-attach { background: transparent; color: #54656f; }
         
-        .url-share {
-            background: var(--background);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 14px;
-            position: relative;
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
         }
         
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            font-size: 12px;
-            cursor: pointer;
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         input[type="file"] { display: none; }
@@ -185,22 +224,40 @@
     </style>
 </head>
 <body>
-    <!-- TELA INICIAL -->
-    <div id="welcomeScreen" class="welcome-screen">
+    <!-- TELA DE CONFIGURAÇÃO -->
+    <div id="setupScreen" class="welcome-screen">
         <div class="welcome-card">
             <div class="logo">
                 <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v-2h-4v2zm0-4h4V6h-4v2z" fill="#25D366"/>
                 </svg>
             </div>
-            <h1>WhatsApp Clone</h1>
-            <p>Compartilhe a URL para conversar com qualquer pessoa</p>
-            <button id="createChatBtn" class="btn-primary">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="white"/>
-                </svg>
-                Criar Novo Chat
+            <h1>WhatsApp Clone Real</h1>
+            <p>Configure o sincronizador de mensagens</p>
+            
+            <div class="setup-form">
+                <div class="form-group">
+                    <label>GitHub Token (gratuito):</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <small>Crie em: GitHub > Settings > Developer settings > Personal access tokens</small>
+                </div>
+                <div class="form-group">
+                    <label>Nome do Gist (identificador do chat):</label>
+                    <input type="text" id="gistId" placeholder="meu-chat-privado-123">
+                    <small>Use o mesmo nome para sincronizar entre dispositivos</small>
+                </div>
+            </div>
+            
+            <button id="startBtn" class="btn-primary">
+                Iniciar Chat
             </button>
+            
+            <div style="margin-top: 20px; font-size: 12px; color: #666;">
+                <p><strong>Como funciona:</strong></p>
+                <p>1. Crie um token no GitHub (é gratuito)</p>
+                <p>2. Compartilhe o nome do gist com outras pessoas</p>
+                <p>3. Todas verão as mesmas mensagens em tempo real!</p>
+            </div>
         </div>
     </div>
 
@@ -213,8 +270,8 @@
                 </svg>
             </button>
             <div style="flex: 1;">
-                <h3>Chat Compartilhado</h3>
-                <small>Compartilhe este link</small>
+                <h3 id="chatTitle">Chat Sincronizado</h3>
+                <small id="syncStatus">Conectando...</small>
             </div>
             <button id="shareBtn" class="btn-icon" title="Compartilhar">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -246,36 +303,30 @@
     <script>
         class WhatsAppClone {
             constructor() {
-                this.currentChatId = null;
-                this.currentFile = null;
+                this.githubToken = localStorage.getItem('githubToken') || '';
+                this.gistId = localStorage.getItem('gistId') || '';
                 this.messages = [];
+                this.syncInterval = null;
+                this.lastSync = 0;
+                
                 this.init();
             }
 
-            init() {
-                console.log('🚀 WhatsApp Clone - URL Compartilhável');
+            async init() {
+                console.log('🚀 WhatsApp Clone com GitHub Gists');
                 
-                // Detectar estado inicial pela URL
-                const hash = window.location.hash;
-                if (hash) {
-                    this.currentChatId = hash.substring(1);
-                    this.loadFromURL();
-                    this.showChatScreen();
+                // Verificar se tem configuração salva
+                if (!this.githubToken || !this.gistId) {
+                    this.showSetupScreen();
                 } else {
-                    this.showWelcomeScreen();
+                    await this.startChat();
                 }
                 
                 this.setupEventListeners();
             }
 
             setupEventListeners() {
-                // Tela inicial
-                const createBtn = document.getElementById('createChatBtn');
-                if (createBtn) {
-                    createBtn.addEventListener('click', () => this.createNewChat());
-                }
-
-                // Chat
+                const startBtn = document.getElementById('startBtn');
                 const sendBtn = document.getElementById('sendBtn');
                 const messageInput = document.getElementById('messageInput');
                 const attachBtn = document.getElementById('attachBtn');
@@ -283,6 +334,10 @@
                 const backBtn = document.getElementById('backBtn');
                 const shareBtn = document.getElementById('shareBtn');
 
+                if (startBtn) {
+                    startBtn.addEventListener('click', () => this.saveSetup());
+                }
+                
                 if (sendBtn) sendBtn.addEventListener('click', () => this.sendMessage());
                 if (messageInput) {
                     messageInput.addEventListener('keypress', (e) => {
@@ -293,65 +348,183 @@
                 if (fileInput) fileInput.addEventListener('change', (e) => this.handleFile(e));
                 if (backBtn) backBtn.addEventListener('click', () => this.goBack());
                 if (shareBtn) shareBtn.addEventListener('click', () => this.shareChat());
-
-                // Detectar mudanças na URL
-                window.addEventListener('hashchange', () => {
-                    location.reload(); // Recarrega para sincronizar
-                });
             }
 
-            createNewChat() {
-                const chatId = 'chat_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-                console.log('📝 Criando chat:', chatId);
-                
-                window.location.hash = chatId;
-                this.currentChatId = chatId;
-                this.showChatScreen();
-            }
-
-            showWelcomeScreen() {
-                console.log('🏠 Tela inicial');
-                document.getElementById('welcomeScreen').style.display = 'flex';
+            showSetupScreen() {
+                document.getElementById('setupScreen').style.display = 'flex';
                 document.getElementById('chatScreen').style.display = 'none';
             }
 
-            showChatScreen() {
-                console.log('💬 Tela do chat');
-                document.getElementById('welcomeScreen').style.display = 'none';
-                document.getElementById('chatScreen').style.display = 'flex';
+            async saveSetup() {
+                const token = document.getElementById('githubToken').value.trim();
+                const gistId = document.getElementById('gistId').value.trim();
                 
-                this.loadMessages();
+                if (!token || !gistId) {
+                    alert('❌ Preencha todos os campos');
+                    return;
+                }
+                
+                // Salvar configuração
+                localStorage.setItem('githubToken', token);
+                localStorage.setItem('gistId', gistId);
+                
+                this.githubToken = token;
+                this.gistId = gistId;
+                
+                await this.startChat();
             }
 
-            // 🔑 SISTEMA CHAVE: Mensagens na URL
-            saveToURL() {
+            async startChat() {
+                document.getElementById('setupScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                
+                // Criar gist se não existir
+                await this.createGistIfNotExists();
+                
+                // Carregar mensagens iniciais
+                await this.loadMessages();
+                
+                // Iniciar sincronização
+                this.startSync();
+                
+                // Atualizar status
+                this.updateStatus('Conectado');
+            }
+
+            async createGistIfNotExists() {
                 try {
-                    // Compactar mensagens para URL
-                    const data = btoa(JSON.stringify(this.messages));
-                    const newUrl = window.location.pathname + window.location.hash + '?data=' + data;
-                    window.history.replaceState({}, '', newUrl);
-                    console.log('💾 Mensagens salvas na URL');
+                    const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.status === 404) {
+                        // Criar novo gist
+                        const gistData = {
+                            description: `Chat WhatsApp Clone: ${this.gistId}`,
+                            public: false,
+                            files: {
+                                'messages.json': {
+                                    content: JSON.stringify([], null, 2)
+                                },
+                                'metadata.json': {
+                                    content: JSON.stringify({
+                                        created: new Date().toISOString(),
+                                        lastUpdate: new Date().toISOString()
+                                    }, null, 2)
+                                }
+                            }
+                        };
+                        
+                        const createResponse = await fetch('https://api.github.com/gists', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(gistData)
+                        });
+                        
+                        if (createResponse.ok) {
+                            console.log('✅ Gist criado com sucesso');
+                        } else {
+                            throw new Error('Falha ao criar gist');
+                        }
+                    } else if (response.ok) {
+                        console.log('✅ Gist existe');
+                    } else {
+                        throw new Error('Erro ao verificar gist');
+                    }
                 } catch (error) {
-                    console.error('❌ Erro ao salvar na URL:', error);
+                    console.error('❌ Erro:', error);
+                    alert('❌ Erro ao conectar com GitHub. Verifique o token e o nome do gist.');
+                    this.goBack();
                 }
             }
 
-            loadFromURL() {
+            async loadMessages() {
                 try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const data = urlParams.get('data');
+                    const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
                     
-                    if (data) {
-                        // Descompactar mensagens da URL
-                        this.messages = JSON.parse(atob(data));
-                        console.log('📨 Mensagens carregadas da URL:', this.messages.length);
+                    if (response.ok) {
+                        const gist = await response.json();
+                        const messagesFile = gist.files['messages.json'];
+                        
+                        if (messagesFile) {
+                            this.messages = JSON.parse(messagesFile.content);
+                            this.renderAllMessages();
+                            console.log(`📨 ${this.messages.length} mensagens carregadas`);
+                        }
                     } else {
-                        console.log('📭 Nenhuma mensagem na URL');
-                        this.messages = [];
+                        console.error('❌ Erro ao carregar mensagens');
                     }
                 } catch (error) {
-                    console.error('❌ Erro ao carregar da URL:', error);
-                    this.messages = [];
+                    console.error('❌ Erro:', error);
+                    this.updateStatus('Erro de conexão');
+                }
+            }
+
+            async saveMessages() {
+                try {
+                    const gistData = {
+                        files: {
+                            'messages.json': {
+                                content: JSON.stringify(this.messages, null, 2)
+                            },
+                            'metadata.json': {
+                                content: JSON.stringify({
+                                    lastUpdate: new Date().toISOString(),
+                                    messageCount: this.messages.length
+                                }, null, 2)
+                            }
+                        }
+                    };
+                    
+                    const response = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(gistData)
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ Mensagens salvas');
+                        this.lastSync = Date.now();
+                    } else {
+                        console.error('❌ Erro ao salvar mensagens');
+                        this.updateStatus('Erro ao salvar');
+                    }
+                } catch (error) {
+                    console.error('❌ Erro:', error);
+                    this.updateStatus('Erro de conexão');
+                }
+            }
+
+            startSync() {
+                // Sincronizar a cada 3 segundos
+                this.syncInterval = setInterval(() => {
+                    this.loadMessages();
+                }, 3000);
+                
+                console.log('🔄 Sincronização iniciada');
+            }
+
+            stopSync() {
+                if (this.syncInterval) {
+                    clearInterval(this.syncInterval);
+                    this.syncInterval = null;
+                    console.log('⏹️ Sincronização parada');
                 }
             }
 
@@ -367,7 +540,7 @@
                     timestamp: new Date().toISOString(),
                     type: this.currentFile ? 'file' : 'text',
                     fileData: this.currentFile,
-                    sender: 'user'
+                    sender: `user_${Math.random().toString(36).substr(2, 9)}`
                 };
                 
                 this.addMessage(message);
@@ -375,8 +548,8 @@
                 this.currentFile = null;
                 input.placeholder = 'Digite uma mensagem...';
                 
-                // Salvar na URL imediatamente
-                this.saveToURL();
+                // Salvar imediatamente
+                this.saveMessages();
             }
 
             addMessage(message) {
@@ -390,7 +563,8 @@
                 if (!messagesList) return;
                 
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${message.sender}`;
+                messageDiv.className = `message received`; // Todos são "received" para não ter lado
+                messageDiv.style.background = '#ffffff'; // Fundo branco para todos
                 
                 const time = new Date(message.timestamp);
                 const timeStr = time.toLocaleTimeString('pt-BR', { 
@@ -401,7 +575,7 @@
                 let content = '';
                 
                 if (message.type === 'text') {
-                    content = `<div>${this.escapeHtml(message.text)}</div>`;
+                    content = `<div><strong>${message.sender.substr(0, 8)}:</strong> ${this.escapeHtml(message.text)}</div>`;
                 } else if (message.type === 'file' && message.fileData) {
                     content = this.renderFile(message.fileData);
                 }
@@ -414,32 +588,32 @@
                 messagesList.appendChild(messageDiv);
             }
 
-            renderFile(fileData) {
-                const { type, name, url } = fileData;
-                
-                if (type.startsWith('image/')) {
-                    return `<img src="${url}" alt="${name}" style="max-width: 200px; border-radius: 12px; cursor: pointer;" onclick="window.open('${url}', '_blank')">`;
-                } else if (type.startsWith('video/')) {
-                    return `<video controls style="max-width: 200px; border-radius: 12px;"><source src="${url}" type="${type}"></video>`;
-                } else if (type.startsWith('audio/')) {
-                    return `<audio controls style="width: 200px;"><source src="${url}" type="${type}"></audio>`;
-                } else {
-                    return `<a href="${url}" download="${name}" style="color: #128C7E; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.83V19h2v-4.17l1.59 1.59L16 15.01 12 11z" fill="#128C7E"/>
-                        </svg>
-                        ${name}
-                    </a>`;
-                }
-            }
-
-            loadMessages() {
+            renderAllMessages() {
                 const messagesList = document.getElementById('messagesList');
                 if (!messagesList) return;
                 
                 messagesList.innerHTML = '';
                 this.messages.forEach(message => this.renderMessage(message));
                 this.scrollToBottom();
+            }
+
+            renderFile(fileData) {
+                const { type, name, url } = fileData;
+                
+                if (type.startsWith('image/')) {
+                    return `<div style="margin: 5px 0;"><img src="${url}" alt="${name}" style="max-width: 200px; border-radius: 12px; cursor: pointer;" onclick="window.open('${url}', '_blank')"></div>`;
+                } else if (type.startsWith('video/')) {
+                    return `<div style="margin: 5px 0;"><video controls style="max-width: 200px; border-radius: 12px;"><source src="${url}" type="${type}"></video></div>`;
+                } else if (type.startsWith('audio/')) {
+                    return `<div style="margin: 5px 0;"><audio controls style="width: 200px;"><source src="${url}" type="${type}"></audio></div>`;
+                } else {
+                    return `<div style="margin: 5px 0;"><a href="${url}" download="${name}" style="color: #128C7E; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.83V19h2v-4.17l1.59 1.59L16 15.01 12 11z" fill="#128C7E"/>
+                        </svg>
+                        ${name}
+                    </a></div>`;
+                }
             }
 
             handleFile(event) {
@@ -464,26 +638,27 @@
             }
 
             shareChat() {
-                const shareUrl = window.location.href;
+                const shareText = `🚀 Chat WhatsApp Clone\n\n🔗 Token: ${this.githubToken}\n📋 Gist: ${this.gistId}\n\nCompartilhe essas credenciais para sincronizar!`;
                 
-                // Copiar para clipboard
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('🔗 Link copiado! Compartilhe com outras pessoas para conversar.');
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('🔗 Credenciais copiadas! Compartilhe com cuidado.');
                 }).catch(() => {
-                    // Fallback para navegadores antigos
-                    const textArea = document.createElement('textarea');
-                    textArea.value = shareUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    alert('🔗 Link copiado! Compartilhe com outras pessoas para conversar.');
+                    alert(`🔗 Copie manualmente:\n\nToken: ${this.githubToken}\nGist: ${this.gistId}`);
                 });
             }
 
             goBack() {
-                window.location.hash = '';
-                this.showWelcomeScreen();
+                this.stopSync();
+                localStorage.removeItem('githubToken');
+                localStorage.removeItem('gistId');
+                location.reload();
+            }
+
+            updateStatus(status) {
+                const statusElement = document.getElementById('syncStatus');
+                if (statusElement) {
+                    statusElement.textContent = status;
+                }
             }
 
             scrollToBottom() {
@@ -502,7 +677,7 @@
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 WhatsApp Clone com URL Compartilhável');
+            console.log('🚀 WhatsApp Clone com GitHub Gists');
             new WhatsAppClone();
         });
     </script>
