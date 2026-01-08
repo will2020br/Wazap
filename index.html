@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Pinggy - Debug Completo</title>
+    <title>Chat Alternativas - Campos Visíveis</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -16,12 +16,6 @@
         .header h1 { font-size: 24px; margin-bottom: 8px; }
         
         .header p { opacity: 0.9; font-size: 14px; }
-        
-        .debug-area { background: #f8f9fa; padding: 20px; margin: 10px 0; border-radius: 8px; }
-        
-        .debug-title { font-weight: 600; color: #495057; margin-bottom: 10px; }
-        
-        .debug-log { background: #2d3748; color: #48bb78; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto; margin: 5px 0; }
         
         .setup-area { padding: 25px; background: #f8f9fa; }
         
@@ -37,7 +31,7 @@
         
         .option-price { font-size: 12px; color: #28a745; font-weight: 600; margin-top: 5px; }
         
-        .input-group { margin-top: 15px; display: none; }
+        .input-group { margin-top: 15px; }
         
         .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #495057; font-size: 14px; }
         
@@ -85,10 +79,6 @@
         
         .code-example { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; word-break: break-all; margin: 5px 0; }
         
-        .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px 0; color: #856404; }
-        
-        .success-box { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin: 15px 0; color: #155724; }
-        
         @media (max-width: 576px) {
             .container { margin: 10px; border-radius: 10px; }
             .header, .setup-area { padding: 20px; }
@@ -99,31 +89,50 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💬 Chat Pinggy - Debug Completo</h1>
-            <p>Detecta formato real e resolve conexão</p>
-        </div>
-        
-        <div class="debug-area">
-            <div class="debug-title">🔍 Debug em Tempo Real:</div>
-            <div id="debugLog" class="debug-log">
-                Sistema iniciado. Aguardando ação...
-            </div>
+            <h1>💬 Chat Alternativas Grátis</h1>
+            <p>Selecione e conecte imediatamente</p>
         </div>
         
         <div id="setupArea" class="setup-area">
-            <h3 style="margin-bottom: 20px; color: #495057;">Conectar via Pinggy:</h3>
+            <h3 style="margin-bottom: 20px; color: #495057;">Escolha uma opção GRÁTIS:</h3>
             
-            <div class="warning-box">
-                <strong>📍 Importante:</strong> O Pinggy gera links assim:
-                <div class="code-example">http://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link</div>
-                <strong>O sistema detecta automaticamente e converte para WebSocket!</strong>
+            <!-- Botões que mostram campos imediatamente -->
+            <button class="option-card" onclick="selectLocaltunnel()" id="localtunnelBtn">
+                <div class="option-title">⚡ Localtunnel (MAIS FÁCIL)</div>
+                <div class="option-description">Só digitar: npx localtunnel --port 8080</div>
+                <div class="option-price">✅ SEM INSTALAR NADA</div>
+            </button>
+            
+            <button class="option-card" onclick="selectPinggy()" id="pinggyBtn">
+                <div class="option-title">🎯 Pinggy (Com TLS)</div>
+                <div class="option-description">SSH que já existe: ssh -R0:localhost:8080 a.pinggy.io</div>
+                <div class="option-price">✅ SEM INSTALAR NADA</div>
+            </button>
+            
+            <button class="option-card" onclick="selectServeo()" id="serveoBtn">
+                <div class="option-title">🚀 Serveo (Mais rápido)</div>
+                <div class="option-description">SSH simples: ssh -R 80:localhost:8080 serveo.net</div>
+                <div class="option-price">✅ SEM INSTALAR NADA</div>
+            </button>
+            
+            <!-- Campos de entrada (visíveis após seleção) -->
+            <div id="localtunnelInput" class="input-group" style="display: none;">
+                <label>URL do Localtunnel:</label>
+                <input type="text" id="localtunnelUrl" placeholder="https://abcde.loca.lt">
+                <div class="help-text">Execute: <code>npx localtunnel --port 8080</code></div>
             </div>
             
-            <div class="input-group">
-                <label>URL do Pinggy (cole exatamente aqui):</label>
-                <input type="url" id="pinggyUrl" placeholder="Cole aqui: http://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link">
-                <div class="help-text">Execute: <code>ssh -p 443 -R0:localhost:8080 a.pinggy.io</code></div>
-                <div class="help-text" style="color: #d63031;">📍 Cole exatamente o link que aparecer (começa com http://)</div>
+            <div id="pinggyInput" class="input-group" style="display: none;">
+                <label>URL do Pinggy:</label>
+                <input type="url" id="pinggyUrl" placeholder="https://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link">
+                <div class="help-text">Execute: <code>ssh -R0:localhost:8080 a.pinggy.io</code></div>
+                <div class="help-text" style="color: #d63031;">📍 Cole exatamente o link que aparecer</div>
+            </div>
+            
+            <div id="serveoInput" class="input-group" style="display: none;">
+                <label>URL do Serveo:</label>
+                <input type="text" id="serveoUrl" placeholder="https://serveo.net">
+                <div class="help-text">Execute: <code>ssh -R 80:localhost:8080 serveo.net</code></div>
             </div>
             
             <div class="input-group">
@@ -136,7 +145,7 @@
                 <input type="text" id="roomName" placeholder="nome-da-sala" value="sala1">
             </div>
             
-            <button id="connectBtn" class="btn-primary" onclick="handleConnection()">
+            <button id="connectBtn" class="btn-primary" onclick="handleConnection()" disabled>
                 Conectar
             </button>
             
@@ -157,30 +166,84 @@
     </div>
 
     <script>
-        // Sistema de debug
-        function addDebugLog(message) {
-            const debugLog = document.getElementById('debugLog');
-            const timestamp = new Date().toLocaleTimeString('pt-BR');
-            const logEntry = `[${timestamp}] ${message}`;
-            debugLog.innerHTML += logEntry + '<br>';
-            debugLog.scrollTop = debugLog.scrollHeight;
-            console.log(logEntry);
-        }
-
-        // Variáveis globais
+        // VARIÁVEIS GLOBAIS
+        let selectedOption = '';
         let ws = null;
         let isConnected = false;
         let userName = '';
         let roomName = '';
 
-        // FUNÇÕES COM DEBUG COMPLETO
-        function handleConnection() {
-            addDebugLog('🔄 Iniciando conexão...');
+        // FUNÇÕES SIMPLES - MOSTRAM CAMPOS IMEDIATAMENTE
+        function selectLocaltunnel() {
+            console.log('⚡ Selecionado Localtunnel');
+            selectedOption = 'localtunnel';
             
-            const url = document.getElementById('pinggyUrl').value.trim();
+            // Limpa seleções
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Marca esta opção
+            document.getElementById('localtunnelBtn').classList.add('active');
+            
+            // MOSTRA CAMPO IMEDIATAMENTE
+            hideAllInputs();
+            document.getElementById('localtunnelInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+            
+            console.log('✅ Localtunnel selecionado - campo visível');
+        }
+
+        function selectPinggy() {
+            console.log('🎯 Selecionado Pinggy');
+            selectedOption = 'pinggy';
+            
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.getElementById('pinggyBtn').classList.add('active');
+            hideAllInputs();
+            document.getElementById('pinggyInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+            
+            console.log('✅ Pinggy selecionado - campo visível');
+        }
+
+        function selectServeo() {
+            console.log('🚀 Selecionado Serveo');
+            selectedOption = 'serveo';
+            
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.getElementById('serveoBtn').classList.add('active');
+            hideAllInputs();
+            document.getElementById('serveoInput').style.display = 'block';
+            document.getElementById('connectBtn').disabled = false;
+            
+            console.log('✅ Serveo selecionado - campo visível');
+        }
+
+        function hideAllInputs() {
+            document.getElementById('localtunnelInput').style.display = 'none';
+            document.getElementById('pinggyInput').style.display = 'none';
+            document.getElementById('serveoInput').style.display = 'none';
+        }
+
+        function handleConnection() {
+            console.log('🔌 Iniciando conexão...');
+            
+            if (!selectedOption) {
+                alert('❌ Por favor, selecione uma opção primeiro!');
+                return;
+            }
+            
+            const urlField = selectedOption + 'Url';
+            const url = document.getElementById(urlField).value.trim();
             
             if (!url) {
-                addDebugLog('❌ URL vazia');
                 alert('❌ Por favor, insira a URL!');
                 return;
             }
@@ -188,142 +251,110 @@
             userName = document.getElementById('userName').value.trim() || 'Usuário';
             roomName = document.getElementById('roomName').value.trim() || 'sala1';
             
-            addDebugLog(`📝 Dados: URL="${url}", User="${userName}", Room="${roomName}"`);
+            console.log('📝 Dados:', { option: selectedOption, url: url, userName: userName, roomName: roomName });
             
-            // Processa com debug detalhado
-            const processedUrl = processPinggyUrl(url);
-            addDebugLog(`🔗 Processando conexão com: ${processedUrl}`);
-            
-            connectWithDebug(processedUrl);
+            // Processa e conecta
+            const processedUrl = processUrl(url);
+            connectToServer(processedUrl);
         }
 
-        function processPinggyUrl(url) {
-            addDebugLog(`📍 URL original: ${url}`);
-            addDebugLog(`📍 Tamanho: ${url.length} caracteres`);
-            addDebugLog(`📍 Protocolo detectado: ${url.startsWith('http://') ? 'HTTP' : url.startsWith('https://') ? 'HTTPS' : 'Outro'}`);
+        function processUrl(url) {
+            console.log('🔗 Processando URL:', url);
+            console.log('📍 Tipo de conexão:', selectedOption);
             
             let processedUrl = url.trim();
             
-            // Detecta formato específico do Pinggy
-            if (url.includes('pinggy.link')) {
-                addDebugLog('📍 Detectado formato Pinggy .link');
-                // Pinggy HTTP → WSS
-                processedUrl = processedUrl.replace('http://', 'wss://');
-                processedUrl = processedUrl.replace('https://', 'wss://');
-            } else if (url.startsWith('tcp://')) {
-                addDebugLog('📍 Detectado formato TCP');
-                processedUrl = processedUrl.replace('tcp://', 'wss://');
-            } else if (!url.startsWith('ws')) {
-                addDebugLog('📍 Sem protocolo - adicionando WSS');
-                processedUrl = 'wss://' + processedUrl;
+            // Converte baseado no serviço
+            switch(selectedOption) {
+                case 'localtunnel':
+                case 'serveo':
+                    // Converte HTTPS para WSS
+                    processedUrl = processedUrl.replace('https://', 'wss://');
+                    if (!processedUrl.startsWith('wss://')) {
+                        processedUrl = 'wss://' + processedUrl;
+                    }
+                    break;
+                    
+                case 'pinggy':
+                    // Pinggy pode vir em vários formatos - detecta automaticamente
+                    if (url.includes('pinggy.link')) {
+                        console.log('📍 Detectado formato Pinggy .link');
+                        processedUrl = processedUrl.replace('http://', 'wss://');
+                        processedUrl = processedUrl.replace('https://', 'wss://');
+                    } else if (url.startsWith('tcp://')) {
+                        console.log('📍 Detectado formato TCP');
+                        processedUrl = processedUrl.replace('tcp://', 'wss://');
+                    } else {
+                        console.log('📍 Sem protocolo - adicionando WSS');
+                        processedUrl = 'wss://' + processedUrl;
+                    }
+                    break;
             }
             
-            addDebugLog(`📍 URL processada: ${processedUrl}`);
+            console.log('🔗 URL final:', processedUrl);
             return processedUrl;
         }
 
-        function connectWithDebug(url) {
-            addDebugLog(`🔄 Iniciando WebSocket em: ${url}`);
+        function connectToServer(url) {
+            console.log('🔄 Conectando a:', url);
             updateStatus('Conectando...', 'connecting');
             document.getElementById('connectBtn').disabled = true;
             
             try {
-                // Cria WebSocket com timeout
-                const wsStartTime = Date.now();
-                
                 ws = new WebSocket(url);
                 
-                // Timeout de conexão
-                const connectionTimeout = setTimeout(() => {
-                    if (ws.readyState !== WebSocket.OPEN) {
-                        addDebugLog('⏰ Timeout de conexão (10s)');
-                        ws.close();
-                        handleConnectionError('Timeout de conexão');
-                    }
-                }, 10000);
-                
-                ws.onopen = function(event) {
-                    clearTimeout(connectionTimeout);
-                    const connectionTime = Date.now() - wsStartTime;
-                    addDebugLog(`✅ Conexão aberta em ${connectionTime}ms`);
-                    addDebugLog(`📍 ReadyState: ${ws.readyState} (OPEN)`);
-                    
+                ws.onopen = function() {
+                    console.log('✅ Conectado com sucesso!');
                     isConnected = true;
                     updateStatus('Conectado', 'connected');
                     showChat();
                     
                     // Entrar na sala
-                    addDebugLog('📤 Enviando join para sala: ' + roomName);
                     ws.send(JSON.stringify({
                         type: 'join',
                         room: roomName,
                         userName: userName
                     }));
                     
-                    addMessage(`🎉 Conectado! Você entrou na sala "${roomName}"`, 'sistema');
-                    addDebugLog('✅ Tudo configurado com sucesso!');
+                    addMessage(`🎉 Você entrou na sala "${roomName}"`, 'sistema');
                 };
                 
                 ws.onmessage = function(event) {
-                    addDebugLog(`📨 Mensagem recebida: ${event.data}`);
-                    try {
-                        const msg = JSON.parse(event.data);
-                        if (msg.type === 'message') {
-                            const sender = msg.userName === userName ? 'Você' : (msg.userName || 'Anônimo');
-                            const messageType = msg.userName === userName ? 'sent' : 'received';
-                            addMessage(`${sender}: ${msg.text}`, messageType);
-                        }
-                    } catch (e) {
-                        addDebugLog(`❌ Erro ao processar mensagem: ${e.message}`);
+                    console.log('📨 Mensagem recebida:', event.data);
+                    const msg = JSON.parse(event.data);
+                    
+                    if (msg.type === 'message') {
+                        const sender = msg.userName === userName ? 'Você' : (msg.userName || 'Anônimo');
+                        const messageType = msg.userName === userName ? 'sent' : 'received';
+                        addMessage(`${sender}: ${msg.text}`, messageType);
                     }
                 };
                 
-                ws.onclose = function(event) {
-                    clearTimeout(connectionTimeout);
-                    addDebugLog(`🔌 Conexão fechada. Code: ${event.code}, Reason: ${event.reason}`);
-                    handleDisconnection();
+                ws.onclose = function() {
+                    console.log('🔌 Desconectado');
+                    isConnected = false;
+                    updateStatus('Desconectado', 'disconnected');
+                    document.getElementById('connectBtn').disabled = false;
+                    addMessage('🔌 Conexão perdida. Verifique o serviço e tente novamente.', 'sistema');
                 };
                 
                 ws.onerror = function(error) {
-                    clearTimeout(connectionTimeout);
-                    addDebugLog(`❌ Erro WebSocket: ${error.type || 'Unknown error'}`);
-                    handleConnectionError('Erro de conexão WebSocket');
+                    console.error('❌ Erro:', error);
+                    updateStatus('Erro de conexão', 'disconnected');
+                    document.getElementById('connectBtn').disabled = false;
+                    alert('❌ Erro ao conectar!\n\nVerifique:\n1. O serviço está rodando?\n2. A URL está correta?\n3. Tente outro serviço da lista');
                 };
                 
             } catch (error) {
-                addDebugLog(`❌ Erro ao criar WebSocket: ${error.message}`);
-                handleConnectionError(error.message);
+                console.error('❌ Erro ao conectar:', error);
+                updateStatus('Erro ao conectar', 'disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                alert('❌ Erro: ' + error.message);
             }
-        }
-
-        function handleDisconnection() {
-            addDebugLog('🔌 Processando desconexão');
-            isConnected = false;
-            updateStatus('Desconectado', 'disconnected');
-            document.getElementById('connectBtn').disabled = false;
-            addMessage('🔌 Conexão perdida. Verifique o serviço e tente novamente.', 'sistema');
-            addDebugLog('✅ Desconexão processada');
-        }
-
-        function handleConnectionError(error) {
-            addDebugLog(`❌ Erro de conexão: ${error}`);
-            updateStatus('Erro: ' + error, 'disconnected');
-            document.getElementById('connectBtn').disabled = false;
-            
-            let mensagem = '❌ Erro ao conectar!\n\n';
-            mensagem += 'Possíveis causas:\n';
-            mensagem += '1. O serviço não está rodando\n';
-            mensagem += '2. A URL está incorreta\n';
-            mensagem += '3. Firewall bloqueando WebSocket\n';
-            mensagem += '4. Tente outro serviço\n\n';
-            mensagem += `Erro: ${error}`;
-            
-            alert(mensagem);
         }
 
         function sendMessage() {
             if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
-                addDebugLog('❌ Tentativa de enviar mensagem sem conexão');
                 alert('❌ Não conectado!');
                 return;
             }
@@ -333,8 +364,6 @@
             
             if (!text) return;
             
-            addDebugLog(`📤 Enviando mensagem: "${text}"`);
-            
             const message = {
                 type: 'message',
                 text: text,
@@ -343,10 +372,8 @@
                 timestamp: new Date().toISOString()
             };
             
-            addDebugLog(`📤 JSON enviado: ${JSON.stringify(message)}`);
             ws.send(JSON.stringify(message));
             input.value = '';
-            addDebugLog('✅ Mensagem enviada');
         }
 
         function addMessage(text, type) {
@@ -360,22 +387,19 @@
             });
             
             messageDiv.innerHTML = `
-                <div>${this.escapeHtml(text)}</div>
+                <div>${text}</div>
                 <div class="message-time">${time}</div>
             `;
             
             messagesList.appendChild(messageDiv);
             messagesList.scrollTop = messagesList.scrollHeight;
-            addDebugLog(`💬 Mensagem adicionada: "${text}" (${type})`);
         }
 
         function showChat() {
-            addDebugLog('🔄 Mostrando área de chat');
             document.getElementById('setupArea').style.display = 'none';
             document.getElementById('chatArea').style.display = 'block';
             document.getElementById('messageInput').disabled = false;
             document.getElementById('sendBtn').disabled = false;
-            addDebugLog('✅ Chat ativado');
         }
 
         function updateStatus(text, type) {
@@ -383,26 +407,15 @@
             status.textContent = text;
             status.className = `status ${type}`;
             status.style.display = 'block';
-            addDebugLog(`📊 Status: ${text} (${type})`);
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            addDebugLog('🚀 Sistema de debug iniciado');
-            addDebugLog('📍 Aguardando interação do usuário...');
+            console.log('🚀 Chat alternativas - Campos visíveis após seleção');
+            console.log('📍 Funções disponíveis: selectLocaltunnel(), selectPinggy(), selectServeo(), handleConnection(), connectToServer(), sendMessage()');
             
-            // Auto-detecta se há URL salva
-            const savedUrl = localStorage.getItem('pinggyUrl');
-            if (savedUrl) {
-                document.getElementById('pinggyUrl').value = savedUrl;
-                addDebugLog(`📍 URL salda carregada: ${savedUrl}`);
-            }
+            // Esconde todos os inputs no início
+            hideAllInputs();
         });
     </script>
 </body>
