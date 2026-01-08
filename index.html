@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Alternativas - Campos Visíveis</title>
+    <title>Chat HTTP Puro - Sem SSL/TLS</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -17,19 +17,23 @@
         
         .header p { opacity: 0.9; font-size: 14px; }
         
+        .info-box { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px; text-align: center; }
+        
+        .info-box h3 { color: #856404; margin-bottom: 8px; }
+        
+        .info-box p { color: #856404; font-size: 13px; margin: 5px 0; }
+        
         .setup-area { padding: 25px; background: #f8f9fa; }
         
-        .option-card { background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; margin: 15px 0; cursor: pointer; transition: all 0.3s; }
+        .mode-selector { background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; margin: 15px 0; }
         
-        .option-card:hover { border-color: #25D366; transform: translateY(-2px); }
+        .mode-title { font-weight: 600; color: #495057; margin-bottom: 10px; }
         
-        .option-card.active { border-color: #25D366; background: #f0f9f0; }
+        .mode-description { font-size: 13px; color: #6c757d; margin-bottom: 15px; }
         
-        .option-title { font-weight: 600; color: #495057; margin-bottom: 8px; }
+        .btn-mode { background: #25D366; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin: 5px; }
         
-        .option-description { font-size: 13px; color: #6c757d; }
-        
-        .option-price { font-size: 12px; color: #28a745; font-weight: 600; margin-top: 5px; }
+        .btn-mode:hover { background: #128C7E; transform: translateY(-1px); }
         
         .input-group { margin-top: 15px; }
         
@@ -79,6 +83,10 @@
         
         .code-example { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; word-break: break-all; margin: 5px 0; }
         
+        .success-box { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin: 15px 0; color: #155724; }
+        
+        .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px 0; color: #856404; }
+        
         @media (max-width: 576px) {
             .container { margin: 10px; border-radius: 10px; }
             .header, .setup-area { padding: 20px; }
@@ -89,50 +97,43 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💬 Chat Alternativas Grátis</h1>
-            <p>Selecione e conecte imediatamente</p>
+            <h1>💬 Chat HTTP Puro</h1>
+            <p>Sem SSL/TLS - Conexão direta</p>
+        </div>
+        
+        <div class="info-box">
+            <h3>🎯 SOLUÇÃO SEM SSL/TLS</h3>
+            <p>✅ Use HTTP puro (ws://)</p>
+            <p>✅ Sem problemas de protocolo</p>
+            <p>✅ Conexão direta e simples</p>
         </div>
         
         <div id="setupArea" class="setup-area">
-            <h3 style="margin-bottom: 20px; color: #495057;">Escolha uma opção GRÁTIS:</h3>
+            <h3 style="margin-bottom: 20px; color: #495057;">Escolha seu método:</h3>
             
-            <!-- Botões que mostram campos imediatamente -->
-            <button class="option-card" onclick="selectLocaltunnel()" id="localtunnelBtn">
-                <div class="option-title">⚡ Localtunnel (MAIS FÁCIL)</div>
-                <div class="option-description">Só digitar: npx localtunnel --port 8080</div>
-                <div class="option-price">✅ SEM INSTALAR NADA</div>
-            </button>
-            
-            <button class="option-card" onclick="selectPinggy()" id="pinggyBtn">
-                <div class="option-title">🎯 Pinggy (Com TLS)</div>
-                <div class="option-description">SSH que já existe: ssh -R0:localhost:8080 a.pinggy.io</div>
-                <div class="option-price">✅ SEM INSTALAR NADA</div>
-            </button>
-            
-            <button class="option-card" onclick="selectServeo()" id="serveoBtn">
-                <div class="option-title">🚀 Serveo (Mais rápido)</div>
-                <div class="option-description">SSH simples: ssh -R 80:localhost:8080 serveo.net</div>
-                <div class="option-price">✅ SEM INSTALAR NADA</div>
-            </button>
-            
-            <!-- Campos de entrada (visíveis após seleção) -->
-            <div id="localtunnelInput" class="input-group" style="display: none;">
-                <label>URL do Localtunnel:</label>
-                <input type="text" id="localtunnelUrl" placeholder="https://abcde.loca.lt">
-                <div class="help-text">Execute: <code>npx localtunnel --port 8080</code></div>
+            <div class="mode-selector">
+                <div class="mode-title">🔌 Opção 1: Local na mesma máquina</div>
+                <div class="mode-description">Use quando servidor e cliente estão no mesmo computador</div>
+                <button class="btn-mode" onclick="selectLocalMode()">Usar Localhost</button>
             </div>
             
-            <div id="pinggyInput" class="input-group" style="display: none;">
-                <label>URL do Pinggy:</label>
-                <input type="url" id="pinggyUrl" placeholder="https://yvxff-2804-3e60-496-7701-6c94-33af-4f27.a.free.pinggy.link">
-                <div class="help-text">Execute: <code>ssh -R0:localhost:8080 a.pinggy.io</code></div>
-                <div class="help-text" style="color: #d63031;">📍 Cole exatamente o link que aparecer</div>
+            <div class="mode-selector">
+                <div class="mode-title">🌐 Opção 2: Rede local (WiFi)</div>
+                <div class="mode-description">Use quando está na mesma rede WiFi</div>
+                <button class="btn-mode" onclick="selectNetworkMode()">Usar Rede Local</button>
             </div>
             
-            <div id="serveoInput" class="input-group" style="display: none;">
-                <label>URL do Serveo:</label>
-                <input type="text" id="serveoUrl" placeholder="https://serveo.net">
-                <div class="help-text">Execute: <code>ssh -R 80:localhost:8080 serveo.net</code></div>
+            <div class="mode-selector">
+                <div class="mode-title">⚡ Opção 3: Sem ngrok (direto)</div>
+                <div class="mode-description">Conexão direta HTTP - sem intermediários</div>
+                <button class="btn-mode" onclick="selectDirectMode()">Conexão Direta</button>
+            </div>
+            
+            <!-- Campos sempre visíveis após seleção -->
+            <div id="connectionInput" class="input-group" style="display: none;">
+                <label id="urlLabel">Endereço:</label>
+                <input type="text" id="serverUrl" placeholder="ws://...">
+                <div class="help-text" id="urlHelp">Endereço do servidor WebSocket</div>
             </div>
             
             <div class="input-group">
@@ -150,6 +151,10 @@
             </button>
             
             <div id="status" class="status" style="display: none;"></div>
+            
+            <div id="helpText" class="warning-box" style="display: none;">
+                <strong>💡 Dica:</strong> <span id="helpTextContent"></span>
+            </div>
         </div>
         
         <div id="chatArea" class="chat-area">
@@ -166,145 +171,95 @@
     </div>
 
     <script>
-        // VARIÁVEIS GLOBAIS
-        let selectedOption = '';
+        // Sistema HTTP puro - sem SSL/TLS
         let ws = null;
         let isConnected = false;
         let userName = '';
         let roomName = '';
+        let connectionMode = '';
 
-        // FUNÇÕES SIMPLES - MOSTRAM CAMPOS IMEDIATAMENTE
-        function selectLocaltunnel() {
-            console.log('⚡ Selecionado Localtunnel');
-            selectedOption = 'localtunnel';
+        // MODOS DE CONEXÃO HTTP
+        function selectLocalMode() {
+            console.log('🔌 Modo: Localhost');
+            connectionMode = 'local';
             
-            // Limpa seleções
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('active');
-            });
+            document.querySelectorAll('.btn-mode').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
             
-            // Marca esta opção
-            document.getElementById('localtunnelBtn').classList.add('active');
+            document.getElementById('connectionInput').style.display = 'block';
+            document.getElementById('serverUrl').value = 'ws://localhost:8080';
+            document.getElementById('urlLabel').textContent = 'Endereço local:';
+            document.getElementById('urlHelp').textContent = 'Use ws://localhost:8080';
+            document.getElementById('helpText').style.display = 'block';
+            document.getElementById('helpTextContent').textContent = '✅ Certifique-se de que o servidor está rodando em localhost:8080';
             
-            // MOSTRA CAMPO IMEDIATAMENTE
-            hideAllInputs();
-            document.getElementById('localtunnelInput').style.display = 'block';
             document.getElementById('connectBtn').disabled = false;
-            
-            console.log('✅ Localtunnel selecionado - campo visível');
         }
 
-        function selectPinggy() {
-            console.log('🎯 Selecionado Pinggy');
-            selectedOption = 'pinggy';
+        function selectNetworkMode() {
+            console.log('🌐 Modo: Rede local');
+            connectionMode = 'network';
             
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('active');
-            });
+            document.querySelectorAll('.btn-mode').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
             
-            document.getElementById('pinggyBtn').classList.add('active');
-            hideAllInputs();
-            document.getElementById('pinggyInput').style.display = 'block';
+            document.getElementById('connectionInput').style.display = 'block';
+            document.getElementById('serverUrl').value = 'ws://192.168.1.100:8080';
+            document.getElementById('urlLabel').textContent = 'IP da rede:';
+            document.getElementById('urlHelp').textContent = 'Use o IP do seu computador na rede';
+            document.getElementById('helpText').style.display = 'block';
+            document.getElementById('helpTextContent').textContent = '✅ Use o IP do seu computador (ex: ws://192.168.1.100:8080)';
+            
             document.getElementById('connectBtn').disabled = false;
-            
-            console.log('✅ Pinggy selecionado - campo visível');
         }
 
-        function selectServeo() {
-            console.log('🚀 Selecionado Serveo');
-            selectedOption = 'serveo';
+        function selectDirectMode() {
+            console.log('⚡ Modo: Direto');
+            connectionMode = 'direct';
             
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('active');
-            });
+            document.querySelectorAll('.btn-mode').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
             
-            document.getElementById('serveoBtn').classList.add('active');
-            hideAllInputs();
-            document.getElementById('serveoInput').style.display = 'block';
+            document.getElementById('connectionInput').style.display = 'block';
+            document.getElementById('serverUrl').value = 'ws://seu-endereco:8080';
+            document.getElementById('urlLabel').textContent = 'Endereço direto:';
+            document.getElementById('urlHelp').textContent = 'Use qualquer endereço HTTP';
+            document.getElementById('helpText').style.display = 'block';
+            document.getElementById('helpText').className = 'success-box';
+            document.getElementById('helpTextContent').textContent = '✅ Use HTTP puro (ws://) - sem HTTPS, sem SSL, sem TLS!';
+            
             document.getElementById('connectBtn').disabled = false;
-            
-            console.log('✅ Serveo selecionado - campo visível');
-        }
-
-        function hideAllInputs() {
-            document.getElementById('localtunnelInput').style.display = 'none';
-            document.getElementById('pinggyInput').style.display = 'none';
-            document.getElementById('serveoInput').style.display = 'none';
         }
 
         function handleConnection() {
-            console.log('🔌 Iniciando conexão...');
-            
-            if (!selectedOption) {
-                alert('❌ Por favor, selecione uma opção primeiro!');
-                return;
-            }
-            
-            const urlField = selectedOption + 'Url';
-            const url = document.getElementById(urlField).value.trim();
-            
-            if (!url) {
-                alert('❌ Por favor, insira a URL!');
-                return;
-            }
-            
+            const url = document.getElementById('serverUrl').value.trim();
             userName = document.getElementById('userName').value.trim() || 'Usuário';
             roomName = document.getElementById('roomName').value.trim() || 'sala1';
             
-            console.log('📝 Dados:', { option: selectedOption, url: url, userName: userName, roomName: roomName });
-            
-            // Processa e conecta
-            const processedUrl = processUrl(url);
-            connectToServer(processedUrl);
-        }
-
-        function processUrl(url) {
-            console.log('🔗 Processando URL:', url);
-            console.log('📍 Tipo de conexão:', selectedOption);
-            
-            let processedUrl = url.trim();
-            
-            // Converte baseado no serviço
-            switch(selectedOption) {
-                case 'localtunnel':
-                case 'serveo':
-                    // Converte HTTPS para WSS
-                    processedUrl = processedUrl.replace('https://', 'wss://');
-                    if (!processedUrl.startsWith('wss://')) {
-                        processedUrl = 'wss://' + processedUrl;
-                    }
-                    break;
-                    
-                case 'pinggy':
-                    // Pinggy pode vir em vários formatos - detecta automaticamente
-                    if (url.includes('pinggy.link')) {
-                        console.log('📍 Detectado formato Pinggy .link');
-                        processedUrl = processedUrl.replace('http://', 'wss://');
-                        processedUrl = processedUrl.replace('https://', 'wss://');
-                    } else if (url.startsWith('tcp://')) {
-                        console.log('📍 Detectado formato TCP');
-                        processedUrl = processedUrl.replace('tcp://', 'wss://');
-                    } else {
-                        console.log('📍 Sem protocolo - adicionando WSS');
-                        processedUrl = 'wss://' + processedUrl;
-                    }
-                    break;
+            if (!url) {
+                alert('❌ Por favor, insira o endereço!');
+                return;
             }
             
-            console.log('🔗 URL final:', processedUrl);
-            return processedUrl;
-        }
-
-        function connectToServer(url) {
-            console.log('🔄 Conectando a:', url);
+            // Garante que é HTTP/WSS puro
+            let finalUrl = url;
+            if (!finalUrl.startsWith('ws://')) {
+                finalUrl = 'ws://' + finalUrl;
+            }
+            
+            console.log('🔄 Conectando via HTTP puro:', finalUrl);
+            console.log('📍 Modo:', connectionMode);
+            console.log('👤 Usuário:', userName);
+            console.log('🏠 Sala:', roomName);
+            
             updateStatus('Conectando...', 'connecting');
             document.getElementById('connectBtn').disabled = true;
             
             try {
-                ws = new WebSocket(url);
+                ws = new WebSocket(finalUrl);
                 
                 ws.onopen = function() {
-                    console.log('✅ Conectado com sucesso!');
+                    console.log('✅ Conectado via HTTP puro!');
                     isConnected = true;
                     updateStatus('Conectado', 'connected');
                     showChat();
@@ -316,13 +271,11 @@
                         userName: userName
                     }));
                     
-                    addMessage(`🎉 Você entrou na sala "${roomName}"`, 'sistema');
+                    addMessage(`🎉 Conectado via ${connectionMode}! Você entrou na sala "${roomName}"`, 'sistema');
                 };
                 
                 ws.onmessage = function(event) {
-                    console.log('📨 Mensagem recebida:', event.data);
                     const msg = JSON.parse(event.data);
-                    
                     if (msg.type === 'message') {
                         const sender = msg.userName === userName ? 'Você' : (msg.userName || 'Anônimo');
                         const messageType = msg.userName === userName ? 'sent' : 'received';
@@ -332,25 +285,40 @@
                 
                 ws.onclose = function() {
                     console.log('🔌 Desconectado');
-                    isConnected = false;
-                    updateStatus('Desconectado', 'disconnected');
-                    document.getElementById('connectBtn').disabled = false;
-                    addMessage('🔌 Conexão perdida. Verifique o serviço e tente novamente.', 'sistema');
+                    handleDisconnection();
                 };
                 
                 ws.onerror = function(error) {
                     console.error('❌ Erro:', error);
-                    updateStatus('Erro de conexão', 'disconnected');
-                    document.getElementById('connectBtn').disabled = false;
-                    alert('❌ Erro ao conectar!\n\nVerifique:\n1. O serviço está rodando?\n2. A URL está correta?\n3. Tente outro serviço da lista');
+                    handleConnectionError('Erro de conexão HTTP');
                 };
                 
             } catch (error) {
                 console.error('❌ Erro ao conectar:', error);
-                updateStatus('Erro ao conectar', 'disconnected');
-                document.getElementById('connectBtn').disabled = false;
-                alert('❌ Erro: ' + error.message);
+                handleConnectionError(error.message);
             }
+        }
+
+        function handleDisconnection() {
+            isConnected = false;
+            updateStatus('Desconectado', 'disconnected');
+            document.getElementById('connectBtn').disabled = false;
+            addMessage('🔌 Conexão perdida. Verifique o servidor e tente novamente.', 'sistema');
+        }
+
+        function handleConnectionError(error) {
+            updateStatus('Erro: ' + error, 'disconnected');
+            document.getElementById('connectBtn').disabled = false;
+            
+            let mensagem = '❌ Erro ao conectar!\n\n';
+            mensagem += 'Soluções para HTTP puro:\n';
+            mensagem += '1. Verifique se o servidor está rodando\n';
+            mensagem += '2. Confirme o endereço e porta\n';
+            mensagem += '3. Use ws:// (não wss://)\n';
+            mensagem += '4. Teste em http:// (não https://)\n\n';
+            mensagem += `Erro: ${error}`;
+            
+            alert(mensagem);
         }
 
         function sendMessage() {
@@ -411,11 +379,10 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Chat alternativas - Campos visíveis após seleção');
-            console.log('📍 Funções disponíveis: selectLocaltunnel(), selectPinggy(), selectServeo(), handleConnection(), connectToServer(), sendMessage()');
-            
-            // Esconde todos os inputs no início
-            hideAllInputs();
+            console.log('🚀 Chat HTTP puro - Sem SSL/TLS');
+            console.log('📍 Modos disponíveis: Local, Rede Local, Direto');
+            console.log('🔗 Use ws:// (não wss://)');
+            console.log('🌐 Use HTTP (não HTTPS)');
         });
     </script>
 </body>
